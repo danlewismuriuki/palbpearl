@@ -3,3 +3,29 @@ export type HealthCheckResponse = {
   source: 'mock' | 'real';
   timestamp: string;
 };
+
+export type Gender = 'female' | 'male';
+
+export type FarmerRegistrationRequest = {
+  fullName: string;
+  gender: Gender;
+  age: number; // 18–100
+  phone: string; // +2547XXXXXXXX or +2541XXXXXXXX
+  email?: string;
+  county: string;
+  subCounty: string;
+  ward: string;
+  village: string;
+  gps?: { lat: number; lng: number };
+};
+
+export type Farmer = FarmerRegistrationRequest & {
+  id: string;
+  registeredAt: string; // ISO 8601
+  syncStatus: 'pending' | 'synced';
+};
+
+export type FarmerRegistrationResponse = {
+  farmer: Farmer;
+  source: 'mock' | 'real';
+};

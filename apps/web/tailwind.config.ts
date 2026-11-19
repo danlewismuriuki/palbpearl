@@ -26,6 +26,23 @@ const config: Config = {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
+      fontSize: {
+        display: ['28px', { lineHeight: '1.2' }],
+        h1: ['24px', { lineHeight: '1.25' }],
+        h2: ['20px', { lineHeight: '1.3' }],
+        h3: ['18px', { lineHeight: '1.35' }],
+        body: ['16px', { lineHeight: '1.5' }],
+        'body-small': ['14px', { lineHeight: '1.5' }],
+        label: ['14px', { lineHeight: '1.4' }],
+        caption: ['12px', { lineHeight: '1.4' }],
+        button: ['16px', { lineHeight: '1' }],
+      },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
+      },
       spacing: {
         '0': '0',
         '1': '4px',
