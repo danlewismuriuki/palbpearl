@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import {
   FormEvent,
   ReactNode,
@@ -20,8 +19,8 @@ import { registerFarmer } from '@/lib/data-client';
 type FormValues = {
   fullName: string;
   gender: Gender | '';
-  age: string;
-  phone: string;
+  ageOrYear: string;
+  phoneLocal: string;
   email: string;
   county: string;
   subCounty: string;
@@ -30,16 +29,14 @@ type FormValues = {
 };
 
 type FieldKey = keyof FormValues;
-
 type FieldErrors = Partial<Record<FieldKey, string>>;
-
 type UiState = 'idle' | 'validating' | 'submitting' | 'success' | 'error';
 
 const EMPTY_FORM: FormValues = {
   fullName: '',
   gender: '',
-  age: '',
-  phone: '',
+  ageOrYear: '',
+  phoneLocal: '',
   email: '',
   county: '',
   subCounty: '',
@@ -47,14 +44,14 @@ const EMPTY_FORM: FormValues = {
   village: '',
 };
 
-const PHONE_PATTERN = /^\+254\d{9}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_LOCAL_PATTERN = /^\d{9}$/;
 
 const FIELD_LABELS: Record<FieldKey, string> = {
   fullName: 'Full name',
   gender: 'Gender',
-  age: 'Age',
-  phone: 'Phone number',
+  ageOrYear: 'Age or birth year',
+  phoneLocal: 'Phone number',
   email: 'Email',
   county: 'County',
   subCounty: 'Sub-county',
@@ -62,7 +59,24 @@ const FIELD_LABELS: Record<FieldKey, string> = {
   village: 'Village',
 };
 
-const LOCATION_KEYS: FieldKey[] = ['county', 'subCounty', 'ward', 'village'];
+const COUNTY_OPTIONS = ['Kiambu', "Murang'a", 'Nyeri', 'Nyandarua'];
+const SUB_COUNTY_OPTIONS = [
+  'Gatundu South',
+  'Gatundu North',
+  'Juja',
+  'Thika Town',
+];
+const WARD_OPTIONS = ['Kiamwangi', 'Ngenda', 'Kiganjo', 'Ndumberi'];
+
+function resolveAge(ageOrYear: string): number | null {
+  const raw = Number(ageOrYear.trim());
+  if (!ageOrYear.trim() || Number.isNaN(raw)) return null;
+  if (raw >= 18 && raw <= 100) return raw;
+  if (raw >= 1920 && raw <= new Date().getFullYear() - 18) {
+    return new Date().getFullYear() - raw;
+  }
+  return null;
+}
 
 function validateField(key: FieldKey, values: FormValues): string | undefined {
   switch (key) {
@@ -74,15 +88,15 @@ function validateField(key: FieldKey, values: FormValues): string | undefined {
         return 'Choose Female or Male.';
       }
       return undefined;
-    case 'age': {
-      const age = Number(values.age);
-      if (!values.age.trim() || Number.isNaN(age) || age < 18 || age > 100) {
+    case 'ageOrYear': {
+      const age = resolveAge(values.ageOrYear);
+      if (age === null || age < 18 || age > 100) {
         return 'Enter an age between 18 and 100.';
       }
       return undefined;
     }
-    case 'phone':
-      if (!PHONE_PATTERN.test(values.phone.trim())) {
+    case 'phoneLocal':
+      if (!PHONE_LOCAL_PATTERN.test(values.phoneLocal.replace(/\s/g, ''))) {
         return 'Enter a phone number starting with +254, then 9 digits (e.g. +254712345678).';
       }
       return undefined;
@@ -94,8 +108,12 @@ function validateField(key: FieldKey, values: FormValues): string | undefined {
     case 'county':
     case 'subCounty':
     case 'ward':
-    case 'village':
       if (!values[key]) {
+        return "Choose the farmer's county, sub-county, ward, and village.";
+      }
+      return undefined;
+    case 'village':
+      if (!values.village.trim()) {
         return "Choose the farmer's county, sub-county, ward, and village.";
       }
       return undefined;
@@ -113,10 +131,28 @@ function validateAll(values: FormValues): FieldErrors {
   return errors;
 }
 
-const inputClassName =
-  'min-h-12 w-full rounded-md border border-border bg-surface px-4 text-body text-text-primary shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60';
+function Icon({
+  name,
+  className = '',
+  filled,
+}: {
+  name: string;
+  className?: string;
+  filled?: boolean;
+}) {
+  return (
+    <span
+      className={`material-symbols-outlined ${className}`}
+      style={filled ? { fontVariationSettings: "'FILL' 1" } : undefined}
+      aria-hidden="true"
+    >
+      {name}
+    </span>
+  );
+}
 
-const selectClassName = inputClassName;
+const controlBase =
+  'h-14 min-h-12 w-full rounded-lg border-0 bg-accent/15 px-4 text-body text-text-primary focus-visible:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60';
 
 export default function RegisterPage() {
   const formId = useId();
@@ -185,25 +221,25 @@ export default function RegisterPage() {
       setUiState('validating');
       setSubmitError(null);
       const firstKey = (Object.keys(nextErrors) as FieldKey[])[0];
-      if (firstKey) {
-        document.getElementById(fieldId(firstKey))?.focus();
-      }
+      if (firstKey) document.getElementById(fieldId(firstKey))?.focus();
       return;
     }
 
+    const age = resolveAge(values.ageOrYear);
+    if (age === null) return;
+
+    const phoneDigits = values.phoneLocal.replace(/\s/g, '');
     const request: FarmerRegistrationRequest = {
       fullName: values.fullName.trim(),
       gender: values.gender as Gender,
-      age: Number(values.age),
-      phone: values.phone.trim(),
+      age,
+      phone: `+254${phoneDigits}`,
       county: values.county,
       subCounty: values.subCounty,
       ward: values.ward,
-      village: values.village,
+      village: values.village.trim(),
     };
-    if (values.email.trim()) {
-      request.email = values.email.trim();
-    }
+    if (values.email.trim()) request.email = values.email.trim();
 
     setUiState('submitting');
     setSubmitError(null);
@@ -227,13 +263,22 @@ export default function RegisterPage() {
   const errorEntries = (Object.keys(errors) as FieldKey[]).filter(
     (key) => errors[key]
   );
+  const fullNameValid =
+    values.fullName.trim().length > 0 && !errors.fullName;
+  const phoneError = errors.phoneLocal;
 
   if (uiState === 'success' && farmer) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-layout-content flex-col gap-6 p-4 md:p-6">
-        {isOffline && <OfflineBadge />}
+      <main className="min-h-screen bg-accent/20 px-4 pb-10 pt-4">
+        <button
+          type="button"
+          onClick={resetForm}
+          className="text-label font-semibold text-brand-secondary underline"
+        >
+          ← Register another farmer
+        </button>
         <section
-          className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-6 shadow-sm"
+          className="mt-4 flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm"
           aria-live="polite"
         >
           <h1 className="text-h1 font-bold text-text-primary">
@@ -241,66 +286,71 @@ export default function RegisterPage() {
           </h1>
           <p className="text-body text-text-primary">{farmer.fullName}</p>
           <p className="text-body text-text-secondary">{farmer.phone}</p>
-          <p className="inline-flex min-h-12 items-center gap-2 self-start rounded-md border border-border bg-surface-elevated px-4 text-label font-medium text-text-primary">
-            <span className="text-success" aria-hidden="true">
-              ✓
-            </span>
+          <p className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-brand-secondary/15 px-4 text-label font-medium text-brand-secondary">
+            <Icon name="check_circle" filled />
             Registered (pending sync)
           </p>
-          <button
-            type="button"
-            onClick={resetForm}
-            className="min-h-12 rounded-md border border-border bg-surface px-4 text-button font-semibold text-text-primary shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            Register another farmer
-          </button>
-          <Link
-            href="/"
-            className="inline-flex min-h-12 items-center text-body font-medium text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            ← Home
-          </Link>
         </section>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-layout-content flex-col p-4 pb-24 md:p-6 md:pb-28">
-      {isOffline && <OfflineBadge />}
+    <main className="mx-auto min-h-screen max-w-md bg-accent/20 px-4 pb-10 pt-4">
+      {/* Offline banner — matches mobile Stitch */}
+      <div
+        role="status"
+        className="mb-4 flex items-start gap-3 rounded-xl bg-accent/30 p-4 shadow-sm"
+      >
+        <Icon
+          name="cloud_off"
+          filled
+          className="shrink-0 text-lg text-brand-primary"
+        />
+        <div className="min-w-0">
+          <p className="flex items-center gap-2 text-h3 font-semibold text-text-primary">
+            Offline Mode Active
+            <span
+              className="inline-block h-2 w-2 rounded-full bg-brand-primary"
+              aria-hidden="true"
+            />
+          </p>
+          <p className="mt-1 text-body text-text-secondary">
+            This form will save directly to your phone storage and sync
+            automatically when internet is detected.
+            {isOffline ? ' You are offline now.' : null}
+          </p>
+        </div>
+      </div>
 
-      <header className="mb-6 flex flex-col gap-2">
-        <p className="text-label font-medium uppercase tracking-wide text-brand-secondary">
-          Module 01 · Ushirika wa Wakulima
+      {/* Screen header — outside form card */}
+      <header className="mb-6 flex flex-col gap-1">
+        <p className="text-caption font-bold uppercase tracking-wider text-brand-secondary">
+          Module 01 • Ushirika wa Wakulima
         </p>
         <h1 className="text-h1 font-bold text-text-primary">
           Farmer Registration
         </h1>
         <p className="text-body text-text-secondary">
-          Register a mushroom farm to receive tailored extension guidance,
-          harvest forecasting, and local market linkages.
+          Register your mushroom farm to receive tailored extension guidance,
+          harvest forecasting, and direct local market linkages.
         </p>
       </header>
 
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-        className="flex flex-col gap-6"
-        aria-busy={isSubmitting}
-      >
-        {uiState === 'error' && submitError && (
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
+        {uiState === 'error' && submitError ? (
           <div
             role="alert"
-            className="rounded-md border border-error bg-surface p-4 text-body text-error shadow-sm"
+            className="rounded-lg border border-error bg-error/10 p-4 text-body text-error"
           >
             {submitError} Check the form and try again.
           </div>
-        )}
+        ) : null}
 
-        {errorEntries.length > 0 && uiState === 'validating' && (
+        {errorEntries.length > 0 && uiState === 'validating' ? (
           <div
             role="alert"
-            className="rounded-md border border-error bg-surface p-4 shadow-sm"
+            className="rounded-lg border border-error bg-error/10 p-4"
           >
             <p className="mb-2 text-label font-medium text-error">
               Please fix the following:
@@ -318,271 +368,380 @@ export default function RegisterPage() {
               ))}
             </ul>
           </div>
-        )}
+        ) : null}
 
-        <FieldGroup
-          id={fieldId('fullName')}
-          label="Full name"
-          error={errors.fullName}
-          required
-        >
-          <input
-            id={fieldId('fullName')}
-            name="fullName"
-            type="text"
-            autoComplete="name"
-            value={values.fullName}
-            disabled={formDisabled}
-            onChange={(e) => setValue('fullName', e.target.value)}
-            onBlur={() => handleBlur('fullName')}
-            aria-invalid={Boolean(errors.fullName)}
-            aria-describedby={
-              errors.fullName ? `${fieldId('fullName')}-error` : undefined
-            }
-            className={inputClassName}
-          />
-        </FieldGroup>
-
-        <fieldset className="flex flex-col gap-2" disabled={formDisabled}>
-          <legend className="mb-1 text-label font-medium text-text-primary">
-            Gender <span className="text-error">*</span>
-          </legend>
-          <p className="text-caption text-text-secondary">
-            Required for M&amp;E reporting
-          </p>
-          <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-required="true">
-            {(['female', 'male'] as const).map((option) => {
-              const selected = values.gender === option;
-              return (
-                <label
-                  key={option}
-                  className={`flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-md border px-4 text-button font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus-ring ${
-                    selected
-                      ? 'border-brand-secondary bg-brand-secondary text-text-on-brand'
-                      : 'border-border bg-surface text-text-primary'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="gender"
-                    value={option}
-                    checked={selected}
-                    onChange={() => setValue('gender', option)}
-                    onBlur={() => handleBlur('gender')}
-                    className="sr-only"
-                    id={option === 'female' ? fieldId('gender') : undefined}
-                  />
-                  <span aria-hidden="true">{selected ? '✓' : '○'}</span>
-                  {option === 'female' ? 'Female' : 'Male'}
-                </label>
-              );
-            })}
-          </div>
-          {errors.gender && (
-            <p id={`${fieldId('gender')}-error`} className="text-body-small text-error">
-              {errors.gender}
-            </p>
-          )}
-        </fieldset>
-
-        <FieldGroup
-          id={fieldId('age')}
-          label="Age"
-          error={errors.age}
-          required
-          hint="Enter the farmer's age in years (18–100)."
-        >
-          <input
-            id={fieldId('age')}
-            name="age"
-            type="number"
-            inputMode="numeric"
-            min={18}
-            max={100}
-            value={values.age}
-            disabled={formDisabled}
-            onChange={(e) => setValue('age', e.target.value)}
-            onBlur={() => handleBlur('age')}
-            aria-invalid={Boolean(errors.age)}
-            aria-describedby={
-              errors.age ? `${fieldId('age')}-error` : undefined
-            }
-            className={inputClassName}
-          />
-        </FieldGroup>
-
-        <FieldGroup
-          id={fieldId('phone')}
-          label="Phone number"
-          error={errors.phone}
-          required
-          hint="M-PESA / SMS — use +254 followed by 9 digits."
-        >
-          <input
-            id={fieldId('phone')}
-            name="phone"
-            type="tel"
-            autoComplete="tel"
-            placeholder="+254712345678"
-            value={values.phone}
-            disabled={formDisabled}
-            onChange={(e) => setValue('phone', e.target.value)}
-            onBlur={() => handleBlur('phone')}
-            aria-invalid={Boolean(errors.phone)}
-            aria-describedby={
-              errors.phone ? `${fieldId('phone')}-error` : undefined
-            }
-            className={inputClassName}
-          />
-        </FieldGroup>
-
-        <FieldGroup
-          id={fieldId('email')}
-          label="Email"
-          error={errors.email}
-          hint="Optional. Leave blank if the farmer does not use email."
-        >
-          <input
-            id={fieldId('email')}
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={values.email}
-            disabled={formDisabled}
-            onChange={(e) => setValue('email', e.target.value)}
-            onBlur={() => handleBlur('email')}
-            aria-invalid={Boolean(errors.email)}
-            aria-describedby={
-              errors.email ? `${fieldId('email')}-error` : undefined
-            }
-            className={inputClassName}
-          />
-        </FieldGroup>
-
-        <section className="flex flex-col gap-4">
-          <h2 className="text-h2 font-semibold text-text-primary">
-            Farm location
-          </h2>
-          {LOCATION_KEYS.map((key) => (
-            <FieldGroup
-              key={key}
-              id={fieldId(key)}
-              label={FIELD_LABELS[key]}
-              error={errors[key]}
-              required
+        {/* Registration card */}
+        <RegistrationCard>
+          {/* Full Name */}
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor={fieldId('fullName')}
+              className="flex items-center justify-between text-label font-bold text-text-primary"
             >
-              <select
-                id={fieldId(key)}
-                name={key}
-                value={values[key]}
+              <span>Full Name</span>
+              <span className="font-medium text-brand-secondary">Required</span>
+            </label>
+            <div className="relative">
+              <input
+                id={fieldId('fullName')}
+                name="fullName"
+                type="text"
+                autoComplete="name"
+                value={values.fullName}
                 disabled={formDisabled}
-                onChange={(e) => setValue(key, e.target.value)}
-                onBlur={() => handleBlur(key)}
-                aria-invalid={Boolean(errors[key])}
-                aria-describedby={
-                  errors[key] ? `${fieldId(key)}-error` : undefined
-                }
-                className={selectClassName}
-              >
-                <option value="">Select…</option>
-                <option value="pending-list">
-                  Placeholder — full list coming from project team
-                </option>
-              </select>
-            </FieldGroup>
-          ))}
-        </section>
-
-        <section className="flex flex-col gap-2">
-          <h2 className="text-h2 font-semibold text-text-primary">
-            Farm GPS
-          </h2>
-          <button
-            type="button"
-            disabled={formDisabled || gpsComingSoon}
-            onClick={() => setGpsComingSoon(true)}
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 text-button font-semibold text-text-primary shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60"
-          >
-            {gpsComingSoon
-              ? 'GPS capture coming in Phase 2'
-              : 'Pin My Farm GPS'}
-          </button>
-          <p className="text-caption text-text-secondary">
-            Visual only for this demo — no GPS API is called.
-          </p>
-        </section>
-
-        <div className="fixed bottom-0 left-0 right-0 border-t border-divider bg-surface shadow-md">
-          <div className="mx-auto flex max-w-layout-content items-center gap-3 p-4 md:px-6">
-            <Link
-              href="/"
-              className="inline-flex min-h-12 flex-1 items-center justify-center rounded-md border border-border bg-surface px-4 text-button font-semibold text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-            >
-              ← Home
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex min-h-12 grow items-center justify-center gap-2 rounded-md bg-brand-primary px-4 text-button font-semibold text-text-on-brand shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60"
-            >
-              {isSubmitting ? (
-                <>
-                  <span
-                    className="h-4 w-4 animate-spin rounded-full border-2 border-text-on-brand border-t-transparent"
-                    aria-hidden="true"
-                  />
-                  Registering…
-                </>
-              ) : (
-                'Register farmer'
-              )}
-            </button>
+                onChange={(e) => setValue('fullName', e.target.value)}
+                onBlur={() => handleBlur('fullName')}
+                aria-invalid={Boolean(errors.fullName)}
+                className={`${controlBase} shadow-sm`}
+              />
+              {fullNameValid ? (
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-secondary">
+                  <Icon name="check_circle" className="text-h3" />
+                </span>
+              ) : null}
+            </div>
+            {errors.fullName ? (
+              <p className="text-body-small text-error">{errors.fullName}</p>
+            ) : null}
           </div>
+
+          {/* Gender */}
+          <fieldset className="flex flex-col gap-1" disabled={formDisabled}>
+            <legend className="text-label font-bold text-text-primary">
+              Gender
+            </legend>
+            <div className="grid grid-cols-2 gap-2" role="radiogroup">
+              {(['male', 'female'] as const).map((option) => {
+                const selected = values.gender === option;
+                return (
+                  <label
+                    key={option}
+                    className={`flex h-14 min-h-12 cursor-pointer items-center justify-between rounded-lg px-4 text-label font-bold capitalize focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus-ring ${
+                      selected
+                        ? 'bg-brand-secondary text-text-on-brand shadow-sm'
+                        : 'bg-accent/25 text-text-primary'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="gender"
+                      value={option}
+                      checked={selected}
+                      onChange={() => setValue('gender', option)}
+                      onBlur={() => handleBlur('gender')}
+                      className="sr-only"
+                      id={option === 'male' ? fieldId('gender') : undefined}
+                    />
+                    {option}
+                    <Icon
+                      name={selected ? 'check_box' : 'check_box_outline_blank'}
+                      filled={selected}
+                      className={selected ? '' : 'text-text-secondary'}
+                    />
+                  </label>
+                );
+              })}
+            </div>
+            {errors.gender ? (
+              <p className="text-body-small text-error">{errors.gender}</p>
+            ) : null}
+          </fieldset>
+
+          {/* Age */}
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor={fieldId('ageOrYear')}
+              className="text-label font-bold text-text-primary"
+            >
+              Age or Birth Year
+            </label>
+            <input
+              id={fieldId('ageOrYear')}
+              name="ageOrYear"
+              type="text"
+              inputMode="numeric"
+              placeholder="e.g. 1982 or 42"
+              value={values.ageOrYear}
+              disabled={formDisabled}
+              onChange={(e) => setValue('ageOrYear', e.target.value)}
+              onBlur={() => handleBlur('ageOrYear')}
+              aria-invalid={Boolean(errors.ageOrYear)}
+              className={controlBase}
+            />
+            <p className="flex items-start gap-1 text-body-small text-text-secondary">
+              <Icon name="info" className="shrink-0 text-label" />
+              Enter either your birth year (e.g. 1982) or your current age in
+              years.
+            </p>
+            {errors.ageOrYear ? (
+              <p className="text-body-small text-error">{errors.ageOrYear}</p>
+            ) : null}
+          </div>
+
+          {/* Phone */}
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor={fieldId('phoneLocal')}
+              className="flex items-center justify-between text-label font-bold text-text-primary"
+            >
+              <span>Phone Number (M-PESA / SMS)</span>
+              {phoneError ? (
+                <span className="font-medium text-error">Action needed</span>
+              ) : null}
+            </label>
+            <div
+              className={`flex h-14 min-h-12 overflow-hidden rounded-lg ${
+                phoneError ? 'ring-2 ring-error' : ''
+              }`}
+            >
+              <span className="flex h-full shrink-0 items-center bg-accent/30 px-4 text-label font-bold text-text-primary">
+                +254
+              </span>
+              <input
+                id={fieldId('phoneLocal')}
+                name="phoneLocal"
+                type="tel"
+                inputMode="numeric"
+                placeholder="712 345 678"
+                value={values.phoneLocal}
+                disabled={formDisabled}
+                onChange={(e) =>
+                  setValue(
+                    'phoneLocal',
+                    e.target.value.replace(/[^\d\s]/g, '').slice(0, 11)
+                  )
+                }
+                onBlur={() => handleBlur('phoneLocal')}
+                aria-invalid={Boolean(phoneError)}
+                className="h-full w-full border-0 bg-accent/15 px-4 text-body font-semibold text-text-primary focus-visible:outline-none disabled:opacity-60"
+              />
+              {phoneError ? (
+                <span className="flex shrink-0 items-center pr-3 text-error">
+                  <Icon name="error" className="text-h3" />
+                </span>
+              ) : null}
+            </div>
+            {phoneError ? (
+              <div className="mt-1 flex items-start gap-2 rounded-lg bg-error/15 p-3 text-error">
+                <Icon name="warning" filled className="mt-0.5 shrink-0 text-label" />
+                <p className="text-body-small">
+                  Please enter 9 digits after +254 (e.g., 712 345 678) so we can
+                  send weekly yield SMS &amp; M-PESA links.
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Email */}
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor={fieldId('email')}
+              className="text-label font-bold text-text-primary"
+            >
+              Email Address{' '}
+              <span className="font-normal text-text-secondary">(Optional)</span>
+            </label>
+            <input
+              id={fieldId('email')}
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="name@example.com"
+              value={values.email}
+              disabled={formDisabled}
+              onChange={(e) => setValue('email', e.target.value)}
+              onBlur={() => handleBlur('email')}
+              aria-invalid={Boolean(errors.email)}
+              className={controlBase}
+            />
+            <p className="text-body-small text-text-secondary">
+              Leave blank if you do not use email; vital alerts are sent via SMS.
+            </p>
+            {errors.email ? (
+              <p className="text-body-small text-error">{errors.email}</p>
+            ) : null}
+          </div>
+
+          {/* Administrative Location */}
+          <section className="flex flex-col gap-4 pt-1">
+            <div className="flex items-center justify-between">
+              <h2 className="text-label font-bold uppercase tracking-wide text-text-primary">
+                Administrative Location
+              </h2>
+              <span className="text-label font-medium text-brand-secondary">
+                Farm Site
+              </span>
+            </div>
+
+            <LocSelect
+              id={fieldId('county')}
+              label="County"
+              value={values.county}
+              options={COUNTY_OPTIONS}
+              disabled={formDisabled}
+              error={errors.county}
+              onChange={(v) => setValue('county', v)}
+              onBlur={() => handleBlur('county')}
+            />
+            <LocSelect
+              id={fieldId('subCounty')}
+              label="Sub-County"
+              value={values.subCounty}
+              options={SUB_COUNTY_OPTIONS}
+              disabled={formDisabled}
+              error={errors.subCounty}
+              onChange={(v) => setValue('subCounty', v)}
+              onBlur={() => handleBlur('subCounty')}
+            />
+            <LocSelect
+              id={fieldId('ward')}
+              label="Ward"
+              value={values.ward}
+              options={WARD_OPTIONS}
+              disabled={formDisabled}
+              error={errors.ward}
+              onChange={(v) => setValue('ward', v)}
+              onBlur={() => handleBlur('ward')}
+            />
+
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor={fieldId('village')}
+                className="text-label font-medium text-text-secondary"
+              >
+                Village or Hamlet
+              </label>
+              <input
+                id={fieldId('village')}
+                name="village"
+                type="text"
+                placeholder="e.g. Kiganjo Village"
+                value={values.village}
+                disabled={formDisabled}
+                onChange={(e) => setValue('village', e.target.value)}
+                onBlur={() => handleBlur('village')}
+                aria-invalid={Boolean(errors.village)}
+                className={`${controlBase} font-semibold`}
+              />
+              {errors.village ? (
+                <p className="text-body-small text-error">{errors.village}</p>
+              ) : null}
+            </div>
+          </section>
+
+          {/* GPS */}
+          <section className="flex flex-col gap-1 pt-1">
+            <p className="text-label font-bold text-text-primary">
+              Farm Geo-Coordinates
+            </p>
+            <button
+              type="button"
+              disabled={formDisabled || gpsComingSoon}
+              onClick={() => setGpsComingSoon(true)}
+              className="flex h-14 min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-accent/30 text-label font-bold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60"
+            >
+              <Icon name="my_location" filled className="text-h3" />
+              Pin My Farm Location (Offline GPS)
+            </button>
+            {gpsComingSoon ? (
+              <div className="mt-1 flex items-start gap-2 rounded-lg bg-brand-secondary/15 p-3 text-brand-secondary">
+                <Icon name="check_circle" filled className="shrink-0 text-label" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-label font-bold text-text-primary">
+                    GPS capture coming in Phase 2
+                  </span>
+                  <span className="text-caption font-bold uppercase tracking-wide text-brand-secondary">
+                    Demo — no GPS API is called
+                  </span>
+                </div>
+              </div>
+            ) : null}
+          </section>
+        </RegistrationCard>
+
+        {/* Primary action — outside card, per mobile mockup */}
+        <div className="flex flex-col gap-2">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex h-14 min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-primary text-button font-bold text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60 active:translate-y-px"
+          >
+            {isSubmitting ? (
+              <>
+                <Icon name="progress_activity" className="animate-spin text-h3" />
+                Registering…
+              </>
+            ) : (
+              <>
+                <Icon name="how_to_reg" className="text-h3" />
+                Register Farm
+              </>
+            )}
+          </button>
+          <p className="flex items-center justify-center gap-2 px-2 text-center text-body-small text-text-secondary">
+            <Icon name="offline_pin" filled className="shrink-0 text-brand-secondary" />
+            No internet required to register. Stored safely on this phone.
+          </p>
         </div>
       </form>
     </main>
   );
 }
 
-function OfflineBadge() {
+function RegistrationCard({ children }: { children: ReactNode }) {
   return (
-    <p
-      role="status"
-      className="mb-4 inline-flex min-h-12 items-center self-start rounded-md border border-border bg-surface-elevated px-4 text-label font-medium text-text-primary"
-    >
-      Offline — will sync when connected
-    </p>
+    <div className="flex flex-col gap-6 rounded-xl bg-surface p-4 shadow-sm">
+      {children}
+    </div>
   );
 }
 
-function FieldGroup({
+function LocSelect({
   id,
   label,
+  value,
+  options,
+  disabled,
   error,
-  required,
-  hint,
-  children,
+  onChange,
+  onBlur,
 }: {
   id: string;
   label: string;
+  value: string;
+  options: string[];
+  disabled?: boolean;
   error?: string;
-  required?: boolean;
-  hint?: string;
-  children: ReactNode;
+  onChange: (value: string) => void;
+  onBlur: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-label font-medium text-text-primary">
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="text-label font-medium text-text-secondary">
         {label}
-        {required ? <span className="text-error"> *</span> : null}
       </label>
-      {hint ? <p className="text-caption text-text-secondary">{hint}</p> : null}
-      {children}
-      {error ? (
-        <p id={`${id}-error`} className="text-body-small text-error">
-          {error}
-        </p>
-      ) : null}
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          aria-invalid={Boolean(error)}
+          className={`${controlBase} appearance-none pr-12 font-semibold`}
+        >
+          <option value="">Select…</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-text-primary">
+          <Icon name="expand_more" className="text-h3" />
+        </span>
+      </div>
+      {error ? <p className="text-body-small text-error">{error}</p> : null}
     </div>
   );
 }
