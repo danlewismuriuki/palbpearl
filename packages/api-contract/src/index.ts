@@ -109,17 +109,74 @@ export type ProductionStage = {
   summary: string;
 };
 
-export type PlantHealthCard = {
+export type CropCycleStepChip = {
   id: string;
   label: string;
+  state: 'completed' | 'current' | 'upcoming';
+};
+
+export type CropCycleProgress = {
+  heading: string;
+  stageLabel: string;
+  steps: CropCycleStepChip[];
+};
+
+export type PlantHealthTag = {
+  id: string;
+  label: string;
+};
+
+export type PlantHealthVisual =
+  | 'healthy_mycelium'
+  | 'green_mold'
+  | 'harvest_ready'
+  | 'substrate_rot';
+
+export type PlantHealthCard = {
+  id: string;
   kind: 'healthy' | 'problem';
+  visual: PlantHealthVisual;
+  statusBadge: string;
+  batchOverlay: string;
+  title: string;
+  severityPill: string;
   note: string;
+  tags: PlantHealthTag[];
+  actionTitle: string;
+  actionBody: string;
   imagePlaceholderLabel: string;
+};
+
+export type PlantDoctorIntro = {
+  title: string;
+  body: string;
+  offlineNote: string;
+};
+
+export type RapidDiagnosticOption = {
+  id: string;
+  tone: 'success' | 'error' | 'warning';
+  label: string;
+};
+
+export type PlantDoctorPanel = {
+  rapidDiagnosticTitle: string;
+  rapidDiagnosticHint: string;
+  rapidDiagnosticAside: string;
+  rapidDiagnosticPrompt: string;
+  rapidDiagnosticOptions: RapidDiagnosticOption[];
+  photoCtaLabel: string;
+  urgentCallTitle: string;
+  urgentCallSubtitle: string;
+  urgentCallAction: string;
 };
 
 export type ProductionGuideResponse = {
   stages: ProductionStage[];
   healthCards: PlantHealthCard[];
+  plantDoctorIntro?: PlantDoctorIntro;
+  cropCycleProgress?: CropCycleProgress;
+  plantDoctorPanel?: PlantDoctorPanel;
   source: 'mock' | 'real';
 };
 

@@ -237,36 +237,129 @@ export function getProductionGuideMock(): ProductionGuideResponse {
           'Dry in morning shade or well-ventilated air. Avoid harsh midday sun.',
       },
     ],
+    cropCycleProgress: {
+      heading: 'Crop cycle progress',
+      stageLabel: 'Stage 4 of 6',
+      steps: [
+        { id: 'cyc-1', label: '1. Substrate', state: 'completed' },
+        { id: 'cyc-2', label: '2. Inoculate', state: 'completed' },
+        { id: 'cyc-3', label: '3. Misting', state: 'completed' },
+        { id: 'cyc-4', label: '4. Pinning', state: 'current' },
+        { id: 'cyc-5', label: '5. Harvest', state: 'upcoming' },
+        { id: 'cyc-6', label: '6. Dry', state: 'upcoming' },
+      ],
+    },
+    plantDoctorIntro: {
+      title: 'Mushroom disease & health check',
+      body:
+        'Compare hanging bags to these reference photos before you open the darkroom. Spot contamination early to protect your full yield.',
+      offlineNote:
+        'Diagnostic library cached offline • Usable in off-grid darkrooms',
+    },
     healthCards: [
       {
         id: 'health-1',
-        label: 'Healthy mycelium',
         kind: 'healthy',
-        note: 'White, even network. Fresh soil smell.',
-        imagePlaceholderLabel: 'Sample image',
+        visual: 'healthy_mycelium',
+        statusBadge: 'Healthy • Pure white',
+        batchOverlay: 'Batch #204 • Pin stage',
+        title: 'Normal colonization (Day 14)',
+        severityPill: 'Optimal',
+        note:
+          'Thick, white, cotton-like mycelium thread growth across the full bag face.',
+        tags: [
+          { id: 't1', label: 'Fresh earth smell' },
+          { id: 't2', label: 'Fine bead droplet' },
+        ],
+        actionTitle: 'Recommended action',
+        actionBody:
+          'Keep humidity at 85–90% and open vents for 10 minutes each morning.',
+        imagePlaceholderLabel: 'Healthy substrate bag on rack',
       },
       {
         id: 'health-2',
-        label: 'Mushroom ready to harvest',
         kind: 'healthy',
-        note: 'Even cap colour, no yellow spots.',
-        imagePlaceholderLabel: 'Sample image',
+        visual: 'harvest_ready',
+        statusBadge: 'Healthy • Ready harvest',
+        batchOverlay: 'Batch #118 • Fruiting',
+        title: 'Even pin set forming',
+        severityPill: 'Optimal',
+        note: 'Caps are opening evenly with no yellowing at the edges.',
+        tags: [
+          { id: 't3', label: 'Earthy mushroom smell' },
+          { id: 't4', label: 'Firm bag texture' },
+        ],
+        actionTitle: 'Recommended action',
+        actionBody: 'Harvest within 24 hours while caps are still curved.',
+        imagePlaceholderLabel: 'Fruiting bag on rack',
       },
       {
         id: 'health-3',
-        label: 'Green mold',
         kind: 'problem',
-        note: 'Bright green surface with powder. Unpleasant smell.',
-        imagePlaceholderLabel: 'Sample image',
+        visual: 'green_mold',
+        statusBadge: 'Contamination • Green mold',
+        batchOverlay: 'High spore risk',
+        title: 'Trichoderma viride alert',
+        severityPill: 'Infected',
+        note:
+          'Powdery olive-green dustings with a sour vinegary odor at the patch edge.',
+        tags: [
+          { id: 't5', label: 'Sour fermented odor' },
+          { id: 't6', label: 'Powdery spores' },
+        ],
+        actionTitle: 'Urgent quarantine action',
+        actionBody:
+          'Isolate this bag immediately, seal it in a separate sack, and do not open nearby bags.',
+        imagePlaceholderLabel: 'Contaminated bag with green mold',
       },
       {
         id: 'health-4',
-        label: 'Substrate rot',
         kind: 'problem',
-        note: 'Dark wet patches. Substrate smells rotten.',
-        imagePlaceholderLabel: 'Sample image',
+        visual: 'substrate_rot',
+        statusBadge: 'Contamination • Wet rot',
+        batchOverlay: 'Quarantine advised',
+        title: 'Substrate rot detected',
+        severityPill: 'Infected',
+        note: 'Dark wet patches at the bag base with stagnant liquid pooling.',
+        tags: [
+          { id: 't7', label: 'Rotten smell' },
+          { id: 't8', label: 'Stagnant liquid' },
+        ],
+        actionTitle: 'Urgent quarantine action',
+        actionBody:
+          'Remove the bag from the rack, drain standing water, and log the batch code.',
+        imagePlaceholderLabel: 'Wet rot on substrate bag',
       },
     ],
+    plantDoctorPanel: {
+      rapidDiagnosticTitle: 'Rapid visual diagnostic',
+      rapidDiagnosticAside: 'Quick triage',
+      rapidDiagnosticHint:
+        'Tap what you observe on your substrate bag right now…',
+      rapidDiagnosticPrompt:
+        'Tap what you observe on your substrate bag right now to verify immediate risk:',
+      rapidDiagnosticOptions: [
+        {
+          id: 'rd-1',
+          tone: 'success',
+          label: 'Pure white, dense webbing with mushroom odor',
+        },
+        {
+          id: 'rd-2',
+          tone: 'error',
+          label: 'Olive green or emerald patches on surface',
+        },
+        {
+          id: 'rd-3',
+          tone: 'warning',
+          label: 'Yellow fluid droplets or stagnant liquid at base',
+        },
+      ],
+      photoCtaLabel: 'Take Photo to Ask Agronomist',
+      urgentCallTitle: 'Urgent contamination call',
+      urgentCallSubtitle: 'Toll-free agricultural extension hotline',
+      urgentCallAction: 'Call free',
+    },
     source: 'mock',
   };
 }
