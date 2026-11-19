@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import type { HomeSummary } from '@palbpearl/api-contract';
+import { FormErrorBanner } from '@/components/FormErrorBanner';
 import { getHomeSummary } from '@/lib/data-client';
+import { useDebugQuery } from '@/lib/use-debug-query';
 
 type LoadState = 'loading' | 'success' | 'error';
 
@@ -59,11 +61,17 @@ function TileGlyph({ kind }: { kind: 'farm' | 'learn' | 'help' | 'market' }) {
 }
 
 export default function HomePage() {
+  const { forceLoadError } = useDebugQuery();
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [summary, setSummary] = useState<HomeSummary | null>(null);
   const [browserOffline, setBrowserOffline] = useState(false);
 
   const load = useCallback(async () => {
+    if (forceLoadError) {
+      setSummary(null);
+      setLoadState('error');
+      return;
+    }
     setLoadState('loading');
     try {
       const result = await getHomeSummary();
@@ -73,7 +81,7 @@ export default function HomePage() {
       setSummary(null);
       setLoadState('error');
     }
-  }, []);
+  }, [forceLoadError]);
 
   useEffect(() => {
     void load();
@@ -95,23 +103,15 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex min-w-0 flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-4">
       {loadState === 'error' ? (
-        <div
-          role="alert"
-          className="flex flex-col gap-3 rounded-lg border border-error/30 bg-error/10 p-4"
+        <FormErrorBanner
+          heading="Could not load"
+          onRetry={() => void load()}
+          retryLabel="Retry"
         >
-          <p className="text-body text-text-primary">
-            Could not load your dashboard. Check your connection and try again.
-          </p>
-          <button
-            type="button"
-            onClick={() => void load()}
-            className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            Try again
-          </button>
-        </div>
+          Could not load your dashboard. Check your connection and try again.
+        </FormErrorBanner>
       ) : null}
 
       {loadState === 'loading' ? (
@@ -137,21 +137,21 @@ export default function HomePage() {
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface-elevated text-caption font-bold text-text-secondary"
               aria-hidden
             >
-              DL
+              WK
             </span>
           </div>
 
           <article className="rounded-xl border border-border bg-surface p-4 shadow-sm">
-            <h3 className="text-label font-semibold text-text-secondary">
+            <p className="text-caption font-bold uppercase tracking-wide text-brand-secondary">
               Today&apos;s task
-            </h3>
+            </p>
             {summary.todayReminder ? (
               <>
-                <p className="mt-2 text-label font-semibold text-brand-secondary">
-                  {summary.todayReminder.cycleStage}
-                </p>
-                <p className="mt-1 text-h3 font-bold text-text-primary">
+                <p className="mt-2 text-h3 font-bold text-text-primary">
                   {summary.todayReminder.title}
+                </p>
+                <p className="mt-1 text-label font-medium text-text-secondary">
+                  {summary.todayReminder.cycleStage}
                 </p>
               </>
             ) : (
@@ -192,7 +192,7 @@ function TileLink({
   return (
     <Link
       href={href}
-      className="flex min-h-28 min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-surface p-4 text-center shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+      className="flex min-h-28 min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-surface p-4 text-center shadow-sm hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
     >
       <TileGlyph kind={kind} />
       <span className="text-body font-semibold text-text-primary">{label}</span>

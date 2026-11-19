@@ -124,6 +124,8 @@ export default function AppShell({ title, children }: AppShellProps) {
     };
   }, []);
 
+  const isHome = pathname === '/home';
+
   const navItemClass = (active: boolean) =>
     `flex min-h-12 min-w-12 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-caption font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
       active ? 'text-brand-primary' : 'text-text-secondary'
@@ -132,8 +134,14 @@ export default function AppShell({ title, children }: AppShellProps) {
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-background">
       <div className="relative mx-auto flex min-h-screen w-full max-w-[430px] flex-col border-divider bg-background shadow-md">
-        <header className="sticky top-0 z-20 flex min-h-12 items-center justify-between gap-2 border-b border-divider bg-surface px-4 py-2">
-          <h1 className="truncate text-h3 font-bold text-text-primary">{title}</h1>
+        <header className="sticky top-0 z-20 flex min-h-12 items-center justify-between gap-2 border-b border-border bg-surface px-4 py-2">
+          {isHome ? (
+            <span className="truncate text-h3 font-bold text-brand-primary">
+              PalBpearl
+            </span>
+          ) : (
+            <h1 className="truncate text-h3 font-bold text-text-primary">{title}</h1>
+          )}
           <span
             role="status"
             className={`inline-flex min-h-8 shrink-0 items-center rounded-full px-3 text-caption font-semibold ${
@@ -149,7 +157,7 @@ export default function AppShell({ title, children }: AppShellProps) {
         <main className="flex-1 overflow-x-hidden px-4 pb-24 pt-4">{children}</main>
 
         <nav
-          className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t border-divider bg-surface"
+          className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t border-border bg-surface"
           aria-label="Main"
         >
           <ul className="flex h-14 min-h-12 w-full items-stretch">

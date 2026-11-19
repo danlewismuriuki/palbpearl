@@ -49,7 +49,7 @@ Operational rules for anyone (including AI) building PalBpearl UI. Read `tokens.
 | Farmer navigation | Top nav / public header patterns | **Bottom nav, 5 items** | Mobile-first farmer Android |
 | Section eyebrow | Coral accent (Deliverable 4) | **Green-tinted eyebrow** (`color-brand-secondary` or `color-accent`) | Brand; not financial coral |
 | Login layout | Centred card (typical pattern) | **Open layout** on `color-background` | Align with Deliverable 5; avoid “boxed SaaS login” |
-| Cards | Cards on marketing / regions | **Full-width lists** on farmer flows; cards only for single “things” | Field use, less chrome |
+| Cards | Cards on marketing / regions | Farmer flows: prefer flat full-width sections. A single contextual card (offline banner, module intro) at the top of a flow is acceptable. Do not stack multiple cards around form fields or lists. | Field use, less chrome |
 | Icons | lucide only | **lucide** (web admin + web demo) + **Material Symbols or agri icons** (Flutter) | Platform and field semantics |
 | Touch token | 40px source | Farmer **48dp**; `touch-target-minimum` 44px elsewhere | Farmer vs staff (see `tokens.md`) |
 | Success vs brand | Success green in palette (Deliverable 2) | **`color-success` only for status**, never for primary CTAs | Avoid “healthy = brand” confusion |

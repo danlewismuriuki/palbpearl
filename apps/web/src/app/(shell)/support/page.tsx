@@ -5,7 +5,11 @@ import type {
   SupportIssueCategory,
   SupportTicket,
 } from '@palbpearl/api-contract';
+import { FieldError, inputBorderClass } from '@/components/FieldError';
+import { FormErrorBanner } from '@/components/FormErrorBanner';
+import { WarningGlyph } from '@/components/WarningGlyph';
 import { submitSupportTicket } from '@/lib/data-client';
+import { useDebugQuery } from '@/lib/use-debug-query';
 
 // TODO: wire farmerId from HomeSummary in a later pass
 const FARMER_ID = 'mock-farmer-001';
@@ -82,17 +86,6 @@ function validateAll(values: FormValues): FieldErrors {
   return errors;
 }
 
-function WarningGlyph() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden className="shrink-0">
-      <path
-        fill="currentColor"
-        d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"
-      />
-    </svg>
-  );
-}
-
 function CameraGlyph() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden className="shrink-0">
@@ -112,29 +105,11 @@ function CheckGlyph() {
   );
 }
 
-function SpinnerGlyph() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      aria-hidden
-      className="shrink-0 animate-spin"
-    >
-      <path
-        fill="currentColor"
-        d="M12 4a8 8 0 108 8h-2a6 6 0 11-6-6V4z"
-        opacity="0.3"
-      />
-      <path fill="currentColor" d="M12 2v4a6 6 0 016 6h-4a2 2 0 00-2-2V2z" />
-    </svg>
-  );
-}
-
 const controlBase =
-  'min-h-12 w-full max-w-full rounded-lg border border-border bg-surface px-4 text-body text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60';
+  'min-h-12 w-full max-w-full rounded-lg border bg-surface px-4 text-body text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60';
 
 export default function SupportTicketPage() {
+  const { forceLoadError, forceFieldErrors } = useDebugQuery();
   const formId = useId();
   const [values, setValues] = useState<FormValues>(EMPTY_FORM);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -160,6 +135,26 @@ export default function SupportTicketPage() {
       window.removeEventListener('offline', update);
     };
   }, []);
+
+  useEffect(() => {
+    if (forceLoadError) {
+      setSubmitError(
+        'Could not submit the ticket. Check your connection and try again.'
+      );
+      setUiState('error');
+    }
+  }, [forceLoadError]);
+
+  useEffect(() => {
+    if (forceFieldErrors) {
+      setErrors({
+        category: 'Choose an issue category',
+        description:
+          'Describe the issue in one or two sentences (10–500 characters)',
+      });
+      setUiState('validating');
+    }
+  }, [forceFieldErrors]);
 
   const fieldId = useCallback((key: FieldKey) => `${formId}-${key}`, [formId]);
 
@@ -336,11 +331,11 @@ export default function SupportTicketPage() {
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
+    <div className="flex min-w-0 flex-col gap-3">
       {isOffline ? (
         <div
           role="status"
-          className="flex items-start gap-3 rounded-xl bg-warning/15 p-4 text-warning"
+          className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/15 p-4"
         >
           <WarningGlyph />
           <p className="text-body font-medium text-text-primary">
@@ -351,50 +346,42 @@ export default function SupportTicketPage() {
       ) : null}
 
       {submitError ? (
-        <div
-          role="alert"
-          className="flex flex-col gap-3 rounded-lg border border-error/30 bg-error/10 p-4"
+        <FormErrorBanner
+          heading="Could not save"
+          onRetry={() => void runSubmit()}
+          retryLabel="Retry"
         >
-          <p className="text-body text-text-primary">{submitError}</p>
-          <button
-            type="button"
-            onClick={() => void runSubmit()}
-            className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            Try again
-          </button>
-        </div>
+          {submitError}
+        </FormErrorBanner>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="flex min-w-0 flex-col gap-4" noValidate>
+      <form
+        onSubmit={handleSubmit}
+        className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm"
+        noValidate
+      >
         {errorEntries.length > 0 && uiState === 'validating' ? (
-          <div
-            role="alert"
-            className="rounded-lg border border-error/30 bg-error/10 p-4"
-          >
-            <p className="mb-2 text-label font-medium text-error">
-              Please fix the following:
-            </p>
+          <FormErrorBanner heading="Check the form">
             <ul className="flex flex-col gap-1">
               {errorEntries.map((key) => (
                 <li key={key}>
                   <a
                     href={`#${fieldId(key)}`}
-                    className="text-body text-error underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                    className="text-body text-text-primary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                   >
                     {FIELD_LABELS[key]}: {errors[key]}
                   </a>
                 </li>
               ))}
             </ul>
-          </div>
+          </FormErrorBanner>
         ) : null}
 
         <div className="flex flex-col gap-1">
           <span className="text-label font-medium text-text-secondary">
             Farmer ID
           </span>
-          <p className="min-h-12 rounded-lg bg-surface-elevated px-4 py-3 text-body text-text-secondary">
+          <p className="min-h-12 rounded-lg border border-border bg-surface-elevated px-4 py-3 text-body font-medium text-text-secondary">
             {FARMER_ID}
           </p>
         </div>
@@ -416,7 +403,7 @@ export default function SupportTicketPage() {
             aria-describedby={
               errors.category ? `${fieldId('category')}-error` : undefined
             }
-            className={`${controlBase} h-14`}
+            className={`${controlBase} h-14 ${inputBorderClass(Boolean(errors.category))}`}
           >
             <option value="">Select…</option>
             {CATEGORY_OPTIONS.map((opt) => (
@@ -426,13 +413,10 @@ export default function SupportTicketPage() {
             ))}
           </select>
           {errors.category ? (
-            <p
+            <FieldError
               id={`${fieldId('category')}-error`}
-              className="text-body-small text-error"
-              role="alert"
-            >
-              {errors.category}
-            </p>
+              message={errors.category}
+            />
           ) : null}
         </div>
 
@@ -456,29 +440,26 @@ export default function SupportTicketPage() {
             aria-describedby={
               errors.description ? `${fieldId('description')}-error` : undefined
             }
-            className={`${controlBase} min-h-24 resize-y py-3`}
+            className={`${controlBase} min-h-24 resize-y py-3 ${inputBorderClass(Boolean(errors.description))}`}
           />
-          <div className="flex min-w-0 items-center justify-between gap-2">
-            {errors.description ? (
-              <p
-                id={`${fieldId('description')}-error`}
-                role="alert"
-                className="min-w-0 flex-1 text-body-small text-error"
-              >
-                {errors.description}
-              </p>
-            ) : (
+          {errors.description ? (
+            <FieldError
+              id={`${fieldId('description')}-error`}
+              message={errors.description}
+            />
+          ) : (
+            <div className="flex min-w-0 items-center justify-between gap-2">
               <span className="text-body-small text-text-secondary">
                 Describe in one or two sentences
               </span>
-            )}
-            <span
-              className="shrink-0 text-body-small text-text-secondary"
-              aria-live="polite"
-            >
-              {descriptionLength}/{DESCRIPTION_MAX}
-            </span>
-          </div>
+              <span
+                className="shrink-0 text-body-small text-text-secondary"
+                aria-live="polite"
+              >
+                {descriptionLength}/{DESCRIPTION_MAX}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex min-w-0 flex-col gap-2">
@@ -523,14 +504,7 @@ export default function SupportTicketPage() {
           disabled={isSubmitting}
           className="flex min-h-12 w-full max-w-full items-center justify-center gap-2 rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60"
         >
-          {isSubmitting ? (
-            <>
-              <SpinnerGlyph />
-              Submitting…
-            </>
-          ) : (
-            'Submit ticket'
-          )}
+          {isSubmitting ? 'Submitting…' : 'Submit ticket'}
         </button>
         <p className="text-center text-body-small text-text-secondary">
           All tickets are reviewed by a mushroom specialist.

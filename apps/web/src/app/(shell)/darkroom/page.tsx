@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DarkroomStep } from '@palbpearl/api-contract';
+import { FormErrorBanner } from '@/components/FormErrorBanner';
+import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import { getDarkroomGuide } from '@/lib/data-client';
+import { useDebugQuery } from '@/lib/use-debug-query';
 
 type LoadState = 'loading' | 'success' | 'error' | 'empty';
 
@@ -26,6 +29,7 @@ function CheckIcon() {
 }
 
 export default function DarkroomGuidePage() {
+  const { forceLoadError } = useDebugQuery();
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [steps, setSteps] = useState<DarkroomStep[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
@@ -34,6 +38,11 @@ export default function DarkroomGuidePage() {
   const [guideFinished, setGuideFinished] = useState(false);
 
   const load = useCallback(async () => {
+    if (forceLoadError) {
+      setSteps([]);
+      setLoadState('error');
+      return;
+    }
     setLoadState('loading');
     setGuideFinished(false);
     try {
@@ -57,7 +66,7 @@ export default function DarkroomGuidePage() {
       setSteps([]);
       setLoadState('error');
     }
-  }, []);
+  }, [forceLoadError]);
 
   useEffect(() => {
     void load();
@@ -95,21 +104,13 @@ export default function DarkroomGuidePage() {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       {loadState === 'error' ? (
-        <div
-          role="alert"
-          className="flex flex-col gap-3 rounded-lg border border-error/30 bg-error/10 p-4"
+        <FormErrorBanner
+          heading="Could not load"
+          onRetry={() => void load()}
+          retryLabel="Retry"
         >
-          <p className="text-body text-text-primary">
-            Could not load the guide. Check your connection and try again.
-          </p>
-          <button
-            type="button"
-            onClick={() => void load()}
-            className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            Try again
-          </button>
-        </div>
+          Could not load the guide. Check your connection and try again.
+        </FormErrorBanner>
       ) : null}
 
       {loadState === 'empty' ? (
@@ -138,10 +139,10 @@ export default function DarkroomGuidePage() {
       ) : null}
 
       {loadState === 'success' && currentStep ? (
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-3">
           <div className="min-w-0 rounded-xl border border-border bg-surface p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-label font-bold text-brand-secondary">
+              <p className="text-label font-bold uppercase tracking-wide text-brand-secondary">
                 Step {currentStep.stepNumber} of {currentStep.totalSteps}
               </p>
               <span className="text-caption font-semibold text-text-secondary">
@@ -149,7 +150,7 @@ export default function DarkroomGuidePage() {
               </span>
             </div>
             <div
-              className="mt-3 h-1 min-h-1 w-full overflow-hidden rounded-full bg-divider"
+              className="mt-3 h-1.5 min-h-1 w-full overflow-hidden rounded-full bg-divider"
               role="progressbar"
               aria-valuenow={currentStep.stepNumber}
               aria-valuemin={1}
@@ -161,25 +162,26 @@ export default function DarkroomGuidePage() {
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
+            <h2 className="mt-4 text-h2 font-bold text-text-primary">
+              {currentStep.title}
+            </h2>
           </div>
 
-          <div className="flex aspect-video w-full min-w-0 items-center justify-center rounded-xl border border-border bg-surface-elevated p-4">
-            <p className="text-center text-body-small text-text-secondary">
-              Step illustration
-            </p>
-          </div>
+          <ImagePlaceholder
+            label={currentStep.imagePlaceholderLabel}
+            aspect="16/9"
+          />
 
           <div className="min-w-0 rounded-xl border border-border bg-surface p-4 shadow-sm">
-            <h2 className="text-h2 font-bold text-text-primary">{currentStep.title}</h2>
-            <p className="mt-3 text-body text-text-primary">{currentStep.instruction}</p>
+            <p className="text-body text-text-primary">{currentStep.instruction}</p>
           </div>
 
           {currentStep.materials.length > 0 ? (
             <section className="rounded-xl border border-border bg-surface p-4 shadow-sm">
-              <h3 className="text-h3 font-semibold text-text-primary">
+              <h3 className="text-label font-bold uppercase tracking-wide text-text-primary">
                 Materials checklist
               </h3>
-              <ul className="mt-3 flex flex-col gap-1">
+              <ul className="mt-3 flex flex-col gap-2">
                 {currentStep.materials.map((material) => {
                   const checked = checkedById[material.id] ?? false;
                   return (
