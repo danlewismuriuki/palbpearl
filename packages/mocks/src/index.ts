@@ -38,12 +38,32 @@ export function getHomeSummaryMock(): HomeSummaryResponse {
     summary: {
       farmerDisplayName: 'Wanjiku Kamau',
       farmerId: 'mock-farmer-001',
+      farmUnitLabel: 'Kiambu Oyster Mushroom Unit #1',
+      lastSyncedDisplay: 'Today 08:30 AM',
       syncStatus: 'synced',
       pendingCount: 0,
+      activeBatch: {
+        batchCode: '084',
+        varietyLabel: 'Grey Oyster (Pleurotus ostreatus)',
+        bagCount: 140,
+        temperatureC: 24.2,
+        cycleEyebrow: 'Running cycle • Spawn run',
+        statusLabel: 'Normal',
+        dayCurrent: 14,
+        dayTotal: 21,
+        colonizedPercent: 65,
+      },
+      agronomistTip:
+        'If spawn bags smell sour or alcoholic, open vents for 10 minutes and note the smell in your log.',
       todayReminder: {
         id: 'rem-001',
-        title: 'Check substrate moisture',
+        title: "Today's inspection",
         cycleStage: 'Fruiting — Day 12',
+        dueEyebrow: 'Day 14 incubation • Due by 12:00 PM',
+        instruction:
+          'Open the darkroom, check bag surfaces for pinning, and confirm humidity stays in range before noon.',
+        humidityTargetLabel: 'Target darkroom humidity',
+        humidityRange: '85%–90%',
       },
     },
     source: 'mock',

@@ -32,15 +32,35 @@ export type FarmerRegistrationResponse = {
 
 export type SyncStatus = 'synced' | 'pending' | 'offline';
 
+export type HomeActiveBatch = {
+  batchCode: string;
+  varietyLabel: string;
+  bagCount: number;
+  temperatureC: number;
+  cycleEyebrow: string;
+  statusLabel: string;
+  dayCurrent: number;
+  dayTotal: number;
+  colonizedPercent: number;
+};
+
 export type HomeSummary = {
   farmerDisplayName: string;
   farmerId: string;
+  farmUnitLabel: string;
+  lastSyncedDisplay: string;
   syncStatus: SyncStatus;
   pendingCount: number;
+  activeBatch: HomeActiveBatch | null;
+  agronomistTip: string | null;
   todayReminder: {
     id: string;
     title: string;
     cycleStage: string;
+    dueEyebrow: string;
+    instruction: string;
+    humidityTargetLabel: string;
+    humidityRange: string;
   } | null;
 };
 
