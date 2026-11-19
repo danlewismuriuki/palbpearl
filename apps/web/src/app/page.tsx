@@ -26,6 +26,12 @@ export default async function HomePage() {
         Primary action
       </button>
       <a
+        href="/home"
+        className="inline-flex min-h-12 items-center text-base font-medium text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+      >
+        Go to Home →
+      </a>
+      <a
         href="/register"
         className="inline-flex min-h-12 items-center text-base font-medium text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
       >

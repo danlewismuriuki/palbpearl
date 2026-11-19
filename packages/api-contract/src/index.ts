@@ -29,3 +29,22 @@ export type FarmerRegistrationResponse = {
   farmer: Farmer;
   source: 'mock' | 'real';
 };
+
+export type SyncStatus = 'synced' | 'pending' | 'offline';
+
+export type HomeSummary = {
+  farmerDisplayName: string;
+  farmerId: string;
+  syncStatus: SyncStatus;
+  pendingCount: number;
+  todayReminder: {
+    id: string;
+    title: string;
+    cycleStage: string;
+  } | null;
+};
+
+export type HomeSummaryResponse = {
+  summary: HomeSummary;
+  source: 'mock' | 'real';
+};

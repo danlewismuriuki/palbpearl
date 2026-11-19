@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   FormEvent,
   ReactNode,
@@ -269,7 +270,7 @@ export default function RegisterPage() {
 
   if (uiState === 'success' && farmer) {
     return (
-      <main className="min-h-screen bg-accent/20 px-4 pb-10 pt-4">
+      <main className="min-h-screen w-full overflow-x-hidden bg-accent/20 px-4 pb-10 pt-4">
         <button
           type="button"
           onClick={resetForm}
@@ -277,6 +278,12 @@ export default function RegisterPage() {
         >
           ← Register another farmer
         </button>
+        <Link
+          href="/home"
+          className="mt-2 inline-flex min-h-12 items-center text-label font-semibold text-brand-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
+          Continue to Home →
+        </Link>
         <section
           className="mt-4 flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm"
           aria-live="polite"
