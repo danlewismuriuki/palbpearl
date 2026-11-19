@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 const TITLES: Record<string, string> = {
   '/home': 'Nyumbani',
   '/darkroom': 'Chumba cha Giza',
+  '/production': 'Uzalishaji',
 };
 
 export default function ShellLayout({

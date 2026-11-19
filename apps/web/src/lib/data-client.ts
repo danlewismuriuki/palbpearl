@@ -1,6 +1,7 @@
 import {
   getDarkroomGuideMock,
   getHomeSummaryMock,
+  getProductionGuideMock,
   healthCheckMock,
   registerFarmerMock,
 } from '@palbpearl/mocks';
@@ -10,6 +11,7 @@ import type {
   FarmerRegistrationResponse,
   HealthCheckResponse,
   HomeSummaryResponse,
+  ProductionGuideResponse,
 } from '@palbpearl/api-contract';
 
 const DATA_SOURCE = process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock';
@@ -41,6 +43,14 @@ export async function getDarkroomGuide(): Promise<DarkroomGuideResponse> {
   if (DATA_SOURCE === 'mock') {
     await new Promise((r) => setTimeout(r, 300));
     return getDarkroomGuideMock();
+  }
+  throw new Error('Real API not implemented yet');
+}
+
+export async function getProductionGuide(): Promise<ProductionGuideResponse> {
+  if (DATA_SOURCE === 'mock') {
+    await new Promise((r) => setTimeout(r, 300));
+    return getProductionGuideMock();
   }
   throw new Error('Real API not implemented yet');
 }

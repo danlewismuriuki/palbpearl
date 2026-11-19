@@ -4,6 +4,7 @@ import type {
   FarmerRegistrationResponse,
   HealthCheckResponse,
   HomeSummaryResponse,
+  ProductionGuideResponse,
 } from '@palbpearl/api-contract';
 
 const DARKROOM_TOTAL = 8;
@@ -145,4 +146,77 @@ export function getDarkroomGuideMock(): DarkroomGuideResponse {
   ];
 
   return { steps, source: 'mock' };
+}
+
+export function getProductionGuideMock(): ProductionGuideResponse {
+  return {
+    stages: [
+      {
+        id: 'prod-stage-1',
+        order: 1,
+        title: 'Maandalizi ya substrate',
+        summary:
+          'Changanya nyasi, kifusi cha nta, na magamba ya mpunga. Ongeza kiasi cha maji ili kufikia unyevunyevu unaofaa.',
+      },
+      {
+        id: 'prod-stage-2',
+        order: 2,
+        title: 'Kunyunyizia maji',
+        summary:
+          'Nyunyiza maji ya uvuguvugu kila siku chini ya kivuli. Epuka maji kuacha kwenye pakiti.',
+      },
+      {
+        id: 'prod-stage-3',
+        order: 3,
+        title: 'Kuchomoza (pinning)',
+        summary:
+          'Angalia vichomozo vidogo. Ongeza hewa safi kidogo na dumisha unyevu sawa.',
+      },
+      {
+        id: 'prod-stage-4',
+        order: 4,
+        title: 'Kuvuna',
+        summary:
+          'Vuna uyoga wakati ubonyeo bado umebaki. Geuza kidole kwa upole ili usiumize.',
+      },
+      {
+        id: 'prod-stage-5',
+        order: 5,
+        title: 'Kukausha kwa jua',
+        summary:
+          'Kausha kwa kivuli ya jua ya asubuhi au hewa ya kutosha. Usiweke kwenye jua kali la mchana.',
+      },
+    ],
+    healthCards: [
+      {
+        id: 'health-1',
+        label: 'Mycelium yenye afya',
+        kind: 'healthy',
+        note: 'Mtando mweupe na kamili. Harufu ya udongo mbichi.',
+        imagePlaceholderLabel: 'Picha ya mfano',
+      },
+      {
+        id: 'health-2',
+        label: 'Uyoga mzuri tayari kuvunwa',
+        kind: 'healthy',
+        note: 'Kofia zenye rangi sawa, bila madoa ya manjano.',
+        imagePlaceholderLabel: 'Picha ya mfano',
+      },
+      {
+        id: 'health-3',
+        label: 'Ukungu wa kijani',
+        kind: 'problem',
+        note: 'Uso wa kijani kibichi wenye mavumbi. Harufu ya kusisimua.',
+        imagePlaceholderLabel: 'Picha ya mfano',
+      },
+      {
+        id: 'health-4',
+        label: 'Kuoza kwa substrate',
+        kind: 'problem',
+        note: 'Sehemu nyeusi zenye maji mengi. Substrate inanuka uoza.',
+        imagePlaceholderLabel: 'Picha ya mfano',
+      },
+    ],
+    source: 'mock',
+  };
 }

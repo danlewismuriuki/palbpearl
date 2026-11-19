@@ -69,3 +69,24 @@ export type DarkroomGuideResponse = {
   steps: DarkroomStep[];
   source: 'mock' | 'real';
 };
+
+export type ProductionStage = {
+  id: string;
+  order: number;
+  title: string;
+  summary: string;
+};
+
+export type PlantHealthCard = {
+  id: string;
+  label: string;
+  kind: 'healthy' | 'problem';
+  note: string;
+  imagePlaceholderLabel: string;
+};
+
+export type ProductionGuideResponse = {
+  stages: ProductionStage[];
+  healthCards: PlantHealthCard[];
+  source: 'mock' | 'real';
+};
