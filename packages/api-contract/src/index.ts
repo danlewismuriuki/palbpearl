@@ -73,6 +73,7 @@ export type DarkroomMaterial = {
   id: string;
   label: string;
   checked: boolean;
+  statusLine?: string;
 };
 
 export type DarkroomStep = {
@@ -82,6 +83,17 @@ export type DarkroomStep = {
   title: string;
   instruction: string;
   imagePlaceholderLabel: string;
+  phaseEyebrow?: string;
+  moduleLabel?: string;
+  stepPhaseTitle?: string;
+  imageTitle?: string;
+  imageFigureRef?: string;
+  imageCaption?: string;
+  cautionTitle?: string | null;
+  cautionBody?: string | null;
+  materialsHeading?: string;
+  sitePhotoSlots?: number;
+  sitePhotoCount?: number;
   materials: DarkroomMaterial[];
 };
 

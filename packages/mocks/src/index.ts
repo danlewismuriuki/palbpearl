@@ -76,14 +76,42 @@ export function getDarkroomGuideMock(): DarkroomGuideResponse {
       id: 'dr-step-1',
       stepNumber: 1,
       totalSteps: DARKROOM_TOTAL,
-      title: 'Choose a shaded site',
+      title: 'Select a shaded, well-drained site',
       instruction:
-        'Choose a spot with enough shade, away from harsh midday sun. Make sure the ground drains well for water.',
-      imagePlaceholderLabel: 'Step illustration',
+        'Pick land under existing trees or beside a hedge so the darkroom stays cool. Sloped ground lets rainwater run off and avoids damp floors in your bags.',
+      imagePlaceholderLabel: 'Shelter orientation diagram',
+      phaseEyebrow: 'Site preparation',
+      moduleLabel: 'Module 2',
+      stepPhaseTitle: 'Site selection & layout',
+      imageTitle: 'Shelter orientation diagram',
+      imageFigureRef: 'Fig 2.1',
+      imageCaption:
+        'Face the doorway toward the morning breeze and keep the lowest corner on the drainage side.',
+      cautionTitle: 'Caution: flood risk',
+      cautionBody:
+        'Do not build in a low basin or beside a ditch that fills in heavy rain. Raise the floor line at least 15 cm above the surrounding ground.',
+      materialsHeading: 'Required materials',
+      sitePhotoSlots: 4,
+      sitePhotoCount: 3,
       materials: [
-        { id: 'mat-poles', label: 'Treated timber poles', checked: false },
-        { id: 'mat-shade', label: 'Farm shade netting', checked: false },
-        { id: 'mat-gunny', label: 'Heavy-duty sacks', checked: false },
+        {
+          id: 'mat-poles',
+          label: 'Treated timber poles',
+          checked: true,
+          statusLine: 'Ready on site',
+        },
+        {
+          id: 'mat-shade',
+          label: 'Farm shade netting',
+          checked: true,
+          statusLine: 'Purchased — 6 m roll',
+        },
+        {
+          id: 'mat-gunny',
+          label: 'Heavy-duty sacks',
+          checked: false,
+          statusLine: 'Buy before step 4',
+        },
       ],
     },
     {
