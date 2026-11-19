@@ -296,7 +296,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-md bg-accent/20 px-4 pb-10 pt-4">
+    <main className="mx-auto min-h-screen w-full overflow-x-hidden bg-accent/20 px-4 pb-10 pt-4">
       {/* Offline banner — matches mobile Stitch */}
       <div
         role="status"
@@ -329,11 +329,11 @@ export default function RegisterPage() {
           Module 01 • Ushirika wa Wakulima
         </p>
         <h1 className="text-h1 font-bold text-text-primary">
-          Farmer Registration
+          Usajili wa Mkulima
         </h1>
         <p className="text-body text-text-secondary">
-          Register your mushroom farm to receive tailored extension guidance,
-          harvest forecasting, and direct local market linkages.
+          Sajili shamba lako la uyoga upate mwongozo wa ukuzaji, utabiri wa
+          mavuno, na uhusiano wa soko la ndani.
         </p>
       </header>
 
@@ -378,8 +378,8 @@ export default function RegisterPage() {
               htmlFor={fieldId('fullName')}
               className="flex items-center justify-between text-label font-bold text-text-primary"
             >
-              <span>Full Name</span>
-              <span className="font-medium text-brand-secondary">Required</span>
+              <span>Jina Kamili</span>
+              <span className="font-medium text-brand-secondary">Lazima</span>
             </label>
             <div className="relative">
               <input
@@ -408,7 +408,7 @@ export default function RegisterPage() {
           {/* Gender */}
           <fieldset className="flex flex-col gap-1" disabled={formDisabled}>
             <legend className="text-label font-bold text-text-primary">
-              Gender
+              Jinsia
             </legend>
             <div className="grid grid-cols-2 gap-2" role="radiogroup">
               {(['male', 'female'] as const).map((option) => {
@@ -432,7 +432,7 @@ export default function RegisterPage() {
                       className="sr-only"
                       id={option === 'male' ? fieldId('gender') : undefined}
                     />
-                    {option}
+                    {option === 'male' ? 'Mume' : 'Mke'}
                     <Icon
                       name={selected ? 'check_box' : 'check_box_outline_blank'}
                       filled={selected}
@@ -453,7 +453,7 @@ export default function RegisterPage() {
               htmlFor={fieldId('ageOrYear')}
               className="text-label font-bold text-text-primary"
             >
-              Age or Birth Year
+              Umri au Mwaka wa Kuzaliwa
             </label>
             <input
               id={fieldId('ageOrYear')}
@@ -484,9 +484,9 @@ export default function RegisterPage() {
               htmlFor={fieldId('phoneLocal')}
               className="flex items-center justify-between text-label font-bold text-text-primary"
             >
-              <span>Phone Number (M-PESA / SMS)</span>
+              <span>Nambari ya Simu (M-PESA / SMS)</span>
               {phoneError ? (
-                <span className="font-medium text-error">Action needed</span>
+                <span className="font-medium text-error">Hatua inahitajika</span>
               ) : null}
             </label>
             <div
@@ -538,8 +538,8 @@ export default function RegisterPage() {
               htmlFor={fieldId('email')}
               className="text-label font-bold text-text-primary"
             >
-              Email Address{' '}
-              <span className="font-normal text-text-secondary">(Optional)</span>
+              Barua Pepe{' '}
+              <span className="font-normal text-text-secondary">(Si lazima)</span>
             </label>
             <input
               id={fieldId('email')}
@@ -566,10 +566,10 @@ export default function RegisterPage() {
           <section className="flex flex-col gap-4 pt-1">
             <div className="flex items-center justify-between">
               <h2 className="text-label font-bold uppercase tracking-wide text-text-primary">
-                Administrative Location
+                Eneo la Shamba
               </h2>
               <span className="text-label font-medium text-brand-secondary">
-                Farm Site
+                Mahali pa Shamba
               </span>
             </div>
 
