@@ -42,6 +42,11 @@ const CATEGORY_LABELS: Record<SupportIssueCategory, string> = {
   other: 'Nyingine',
 };
 
+const FIELD_LABELS: Record<FieldKey, string> = {
+  category: 'Aina ya tatizo',
+  description: 'Maelezo ya tatizo',
+};
+
 const DESCRIPTION_MIN = 10;
 const DESCRIPTION_MAX = 500;
 
@@ -52,8 +57,14 @@ function validateField(key: FieldKey, values: FormValues): string | undefined {
       return undefined;
     case 'description': {
       const len = values.description.trim().length;
-      if (len < DESCRIPTION_MIN || len > DESCRIPTION_MAX) {
+      if (len === 0) {
         return 'Eleza tatizo kwa sentensi moja au mbili (herufi 10–500)';
+      }
+      if (len < DESCRIPTION_MIN) {
+        return 'Ongeza maelezo — angalau herufi 10 zinahitajika';
+      }
+      if (len > DESCRIPTION_MAX) {
+        return 'Fupisha maelezo — herufi si zaidi ya 500';
       }
       return undefined;
     }
@@ -152,15 +163,78 @@ export default function SupportTicketPage() {
 
   const fieldId = useCallback((key: FieldKey) => `${formId}-${key}`, [formId]);
 
-  const handleBlur = (key: FieldKey) => {
+  const touchField = (key: FieldKey) => {
+    setSubmitError(null);
     setUiState((prev) =>
-      prev === 'submitting' || prev === 'success' ? prev : 'validating'
+      prev === 'submitting' || prev === 'success'
+        ? prev
+        : prev === 'error'
+          ? 'idle'
+          : 'validating'
     );
     setErrors((prev) => {
       const next = { ...prev };
       const message = validateField(key, valuesRef.current);
       if (message) next[key] = message;
       else delete next[key];
+      return next;
+    });
+  };
+
+  const handleBlur = (key: FieldKey) => {
+    touchField(key);
+  };
+
+  const setCategory = (category: FormValues['category']) => {
+    setValues((prev) => {
+      const next = { ...prev, category };
+      valuesRef.current = next;
+      return next;
+    });
+    setSubmitError(null);
+    setUiState((prev) =>
+      prev === 'submitting' || prev === 'success'
+        ? prev
+        : prev === 'error'
+          ? 'idle'
+          : prev
+    );
+    setErrors((prev) => {
+      if (!prev.category && uiState !== 'validating') return prev;
+      const message = validateField('category', {
+        ...valuesRef.current,
+        category,
+      });
+      const next = { ...prev };
+      if (message) next.category = message;
+      else delete next.category;
+      return next;
+    });
+  };
+
+  const setDescription = (description: string) => {
+    setValues((prev) => {
+      const next = { ...prev, description };
+      valuesRef.current = next;
+      return next;
+    });
+    setSubmitError(null);
+    setUiState((prev) =>
+      prev === 'submitting' || prev === 'success'
+        ? prev
+        : prev === 'error'
+          ? 'idle'
+          : prev
+    );
+    setErrors((prev) => {
+      if (!prev.description && uiState !== 'validating') return prev;
+      const message = validateField('description', {
+        ...valuesRef.current,
+        description,
+      });
+      const next = { ...prev };
+      if (message) next.description = message;
+      else delete next.description;
       return next;
     });
   };
@@ -216,6 +290,9 @@ export default function SupportTicketPage() {
   const isSubmitting = uiState === 'submitting';
   const formDisabled = isSubmitting;
   const descriptionLength = values.description.length;
+  const errorEntries = (Object.keys(errors) as FieldKey[]).filter(
+    (key) => errors[key]
+  );
 
   if (uiState === 'success' && ticket) {
     const statusLabel = successWasOffline
@@ -266,7 +343,7 @@ export default function SupportTicketPage() {
           className="flex items-start gap-3 rounded-xl bg-warning/15 p-4 text-warning"
         >
           <WarningGlyph />
-          <p className="text-body font-medium text-warning">
+          <p className="text-body font-medium text-text-primary">
             Uko nje ya mtandao. Tiketi yako itahifadhiwa na kutumwa ukiwa na
             muunganisho.
           </p>
@@ -290,6 +367,29 @@ export default function SupportTicketPage() {
       ) : null}
 
       <form onSubmit={handleSubmit} className="flex min-w-0 flex-col gap-4" noValidate>
+        {errorEntries.length > 0 && uiState === 'validating' ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-error/30 bg-error/10 p-4"
+          >
+            <p className="mb-2 text-label font-medium text-error">
+              Tafadhali rekebisha yafuatayo:
+            </p>
+            <ul className="flex flex-col gap-1">
+              {errorEntries.map((key) => (
+                <li key={key}>
+                  <a
+                    href={`#${fieldId(key)}`}
+                    className="text-body text-error underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                  >
+                    {FIELD_LABELS[key]}: {errors[key]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
         <div className="flex flex-col gap-1">
           <span className="text-label font-medium text-text-secondary">
             Kitambulisho cha mkulima
@@ -309,13 +409,13 @@ export default function SupportTicketPage() {
             value={values.category}
             disabled={formDisabled}
             onChange={(e) =>
-              setValues((prev) => ({
-                ...prev,
-                category: e.target.value as FormValues['category'],
-              }))
+              setCategory(e.target.value as FormValues['category'])
             }
             onBlur={() => handleBlur('category')}
             aria-invalid={Boolean(errors.category)}
+            aria-describedby={
+              errors.category ? `${fieldId('category')}-error` : undefined
+            }
             className={`${controlBase} h-14`}
           >
             <option value="">Chagua…</option>
@@ -326,7 +426,13 @@ export default function SupportTicketPage() {
             ))}
           </select>
           {errors.category ? (
-            <p className="text-body-small text-error">{errors.category}</p>
+            <p
+              id={`${fieldId('category')}-error`}
+              className="text-body-small text-error"
+              role="alert"
+            >
+              {errors.category}
+            </p>
           ) : null}
         </div>
 
@@ -344,16 +450,21 @@ export default function SupportTicketPage() {
             disabled={formDisabled}
             rows={5}
             maxLength={DESCRIPTION_MAX}
-            onChange={(e) =>
-              setValues((prev) => ({ ...prev, description: e.target.value }))
-            }
+            onChange={(e) => setDescription(e.target.value)}
             onBlur={() => handleBlur('description')}
             aria-invalid={Boolean(errors.description)}
+            aria-describedby={
+              errors.description ? `${fieldId('description')}-error` : undefined
+            }
             className={`${controlBase} min-h-24 resize-y py-3`}
           />
           <div className="flex min-w-0 items-center justify-between gap-2">
             {errors.description ? (
-              <p className="min-w-0 flex-1 text-body-small text-error">
+              <p
+                id={`${fieldId('description')}-error`}
+                role="alert"
+                className="min-w-0 flex-1 text-body-small text-error"
+              >
                 {errors.description}
               </p>
             ) : (

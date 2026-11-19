@@ -60,14 +60,14 @@ export default function HomePage() {
           className="flex flex-col gap-3 rounded-lg border border-error/30 bg-error/10 p-4"
         >
           <p className="text-body text-text-primary">
-            Could not load your dashboard. Check your connection and try again.
+            Imeshindikana kupakia dashibodi. Angalia muunganisho na ujaribu tena.
           </p>
           <button
             type="button"
             onClick={() => void load()}
             className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
-            Retry
+            Jaribu tena
           </button>
         </div>
       ) : null}
