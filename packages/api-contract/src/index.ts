@@ -48,3 +48,24 @@ export type HomeSummaryResponse = {
   summary: HomeSummary;
   source: 'mock' | 'real';
 };
+
+export type DarkroomMaterial = {
+  id: string;
+  label: string;
+  checked: boolean;
+};
+
+export type DarkroomStep = {
+  id: string;
+  stepNumber: number;
+  totalSteps: number;
+  title: string;
+  instruction: string;
+  imagePlaceholderLabel: string;
+  materials: DarkroomMaterial[];
+};
+
+export type DarkroomGuideResponse = {
+  steps: DarkroomStep[];
+  source: 'mock' | 'real';
+};

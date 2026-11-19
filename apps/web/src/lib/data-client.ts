@@ -1,9 +1,11 @@
 import {
+  getDarkroomGuideMock,
   getHomeSummaryMock,
   healthCheckMock,
   registerFarmerMock,
 } from '@palbpearl/mocks';
 import type {
+  DarkroomGuideResponse,
   FarmerRegistrationRequest,
   FarmerRegistrationResponse,
   HealthCheckResponse,
@@ -31,6 +33,14 @@ export async function getHomeSummary(): Promise<HomeSummaryResponse> {
   if (DATA_SOURCE === 'mock') {
     await new Promise((r) => setTimeout(r, 300));
     return getHomeSummaryMock();
+  }
+  throw new Error('Real API not implemented yet');
+}
+
+export async function getDarkroomGuide(): Promise<DarkroomGuideResponse> {
+  if (DATA_SOURCE === 'mock') {
+    await new Promise((r) => setTimeout(r, 300));
+    return getDarkroomGuideMock();
   }
   throw new Error('Real API not implemented yet');
 }
