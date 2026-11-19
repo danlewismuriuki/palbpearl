@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 72" width="240" height="72" fill="none">
+  <!-- Moisture Alert Warning Badge Container -->
+  <rect x="2" y="2" width="236" height="68" rx="16" fill="#451a03" stroke="#bc6c25" stroke-width="2"/>
+  
+  <!-- Icon Circle Background -->
+  <circle cx="36" cy="36" r="22" fill="#78350f"/>
+  
+  <!-- Droplet outline with warning exclamation mark -->
+  <path d="M36 21C36 21 27 31.2 27 37C27 42 31 46 36 46C41 46 45 42 45 37C45 31.2 36 21 36 21Z" stroke="#fef3c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Exclamation mark inside droplet -->
+  <line x1="36" y1="30" x2="36" y2="36" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="36" cy="40.5" r="1.3" fill="#f59e0b"/>
+  
+  <!-- Low moisture warning indicator pulse -->
+  <path d="M44 26L47 24M45 31L49 31" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/>
+  
+  <!-- Typography / Labels -->
+  <text x="68" y="32" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#fef3c7" letter-spacing="0.5">MOISTURE ALERT</text>
+  <text x="68" y="49" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="11" font-weight="500" fill="#fcd34d">Darkroom RH &lt; 70% • Mist Now</text>
+</svg>

@@ -1,6 +1,6 @@
 // Mockup-alignment pass v3 (register.png, five-screen pass 1/5):
 // - flat column: offline banner + module header on background; fields in one form stack
-// - colour substitutions vs PNG: background #F8F6F1 (not mint); brand-primary #BC6C25 (not darker brown)
+// - colour substitutions vs PNG use design tokens (not exact Stitch hex)
 // - CTA label "Register farmer" (ADR-015); mock shows "Register Farm"
 // - demo prefill + offline-by-default + Simulate online are demo-only
 
@@ -400,6 +400,13 @@ export default function RegisterPage() {
           </button>
         </section>
       ) : null}
+
+      <Link
+        href="/home"
+        className="inline-flex min-h-12 items-center text-body font-semibold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+      >
+        ← Back to Home
+      </Link>
 
       <header className="flex flex-col gap-2">
         <p className="text-caption font-bold uppercase tracking-wider text-brand-secondary">

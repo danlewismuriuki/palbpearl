@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import type {
   CropCycleProgress,
@@ -166,6 +165,8 @@ function SopsPanel({
   stages: ProductionStage[];
   onRetry: () => void;
 }) {
+  const [openStageId, setOpenStageId] = useState<string | null>(null);
+
   return (
     <div
       id="panel-sops"
@@ -177,27 +178,50 @@ function SopsPanel({
         <EmptyTab message="No stages available" onRetry={onRetry} />
       ) : (
         <ul className="flex flex-col gap-3">
-          {stages.map((stage) => (
-            <li key={stage.id}>
-              <Link
-                href="#"
-                className="flex min-h-12 w-full min-w-0 items-center gap-3 rounded-lg border border-border bg-surface p-3 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/20 text-label font-bold text-brand-secondary">
-                  {stage.order}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <h3 className="text-h3 font-bold text-text-primary">
-                    {stage.title}
-                  </h3>
-                  <p className="mt-1 text-body text-text-secondary">
-                    {stage.summary}
-                  </p>
-                </span>
-                <ChevronGlyph className="h-5 w-5 shrink-0 text-text-secondary" />
-              </Link>
-            </li>
-          ))}
+          {stages.map((stage) => {
+            const open = openStageId === stage.id;
+            return (
+              <li key={stage.id} className="min-w-0">
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() =>
+                    setOpenStageId((id) => (id === stage.id ? null : stage.id))
+                  }
+                  className="flex min-h-12 w-full min-w-0 items-center gap-3 rounded-lg border border-border bg-surface p-3 text-left shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/20 text-label font-bold text-brand-secondary">
+                    {stage.order}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <h3 className="text-h3 font-bold text-text-primary">
+                      {stage.title}
+                    </h3>
+                    {!open ? (
+                      <p className="mt-1 line-clamp-2 text-body text-text-secondary">
+                        {stage.summary}
+                      </p>
+                    ) : null}
+                  </span>
+                  <ChevronGlyph
+                    className={`h-5 w-5 shrink-0 text-text-secondary transition-transform ${open ? 'rotate-90' : ''}`}
+                  />
+                </button>
+                {open ? (
+                  <div className="mt-2 rounded-lg border border-border bg-accent/10 p-3">
+                    <p className="text-body text-text-primary">{stage.summary}</p>
+                    <button
+                      type="button"
+                      onClick={() => setOpenStageId(null)}
+                      className="mt-3 min-h-12 text-label font-semibold text-brand-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                    >
+                      Back to list
+                    </button>
+                  </div>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
@@ -367,7 +391,7 @@ function DiagnosticCard({ card }: { card: PlantHealthCard }) {
   return (
     <article className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
       <div className="relative aspect-[16/10] w-full min-w-0 bg-surface-elevated">
-        <BagVisual visual={card.visual} />
+        <BagVisual visual={card.visual} alt={card.title} />
         <StatusBadgeOverlay kind={card.kind} label={card.statusBadge} />
         <span
           className={`absolute bottom-2 right-2 max-w-[calc(100%-0.5rem)] truncate rounded-md px-1.5 py-0.5 text-caption font-bold uppercase shadow-sm ${
@@ -465,6 +489,8 @@ function StatusBadgeOverlay({
 }
 
 function RapidDiagnosticBlock({ panel }: { panel: PlantDoctorPanel }) {
+  const [triageNote, setTriageNote] = useState<string | null>(null);
+
   return (
     <section className="rounded-lg border border-border bg-accent/15 p-3">
       <div className="flex items-start justify-between gap-2">
@@ -484,6 +510,11 @@ function RapidDiagnosticBlock({ panel }: { panel: PlantDoctorPanel }) {
           <li key={opt.id}>
             <button
               type="button"
+              onClick={() =>
+                setTriageNote(
+                  `Demo triage saved for: ${opt.label} (full scoring ships in Phase 2).`
+                )
+              }
               className="flex min-h-12 w-full items-center gap-3 rounded-md border border-border bg-surface px-3 text-left text-body text-text-primary shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
             >
               <ToneDot tone={opt.tone} />
@@ -492,6 +523,11 @@ function RapidDiagnosticBlock({ panel }: { panel: PlantDoctorPanel }) {
           </li>
         ))}
       </ul>
+      {triageNote ? (
+        <p className="mt-2 rounded-md bg-accent/20 px-3 py-2 text-body-small text-text-secondary" role="status">
+          {triageNote}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -513,110 +549,30 @@ function ToneDot({ tone }: { tone: 'success' | 'error' | 'warning' }) {
   );
 }
 
-function BagVisual({ visual }: { visual: PlantHealthCard['visual'] }) {
-  switch (visual) {
-    case 'healthy_mycelium':
-      return <HealthyMyceliumBagSvg className="h-full w-full" />;
-    case 'green_mold':
-      return <GreenMoldBagSvg className="h-full w-full" />;
-    case 'harvest_ready':
-      return <HarvestReadyBagSvg className="h-full w-full" />;
-    case 'substrate_rot':
-      return <SubstrateRotBagSvg className="h-full w-full" />;
+const BAG_IMAGE_BY_VISUAL: Record<PlantHealthCard['visual'], string> = {
+  healthy_mycelium: '/assets/production/bag-healthy.png',
+  green_mold: '/assets/production/bag-mold.png',
+  harvest_ready: '/assets/production/bag-harvest.png',
+  substrate_rot: '/assets/production/bag-rot.png',
+};
+
+function BagVisual({
+  visual,
+  alt,
+}: {
+  visual: PlantHealthCard['visual'];
+  alt: string;
+}) {
+  const src = BAG_IMAGE_BY_VISUAL[visual];
+  if (!src) {
+    return null;
   }
-}
-
-function HealthyMyceliumBagSvg({ className = '' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 320 200" role="img" aria-hidden>
-      <BagRackBackdrop />
-      <rect x="108" y="48" width="104" height="118" rx="8" className="text-surface" fill="currentColor" opacity="0.9" />
-      <rect x="114" y="62" width="92" height="88" rx="4" className="text-brand-primary" fill="currentColor" opacity="0.2" />
-      <g className="text-surface" fill="currentColor" opacity="0.95">
-        <ellipse cx="145" cy="88" rx="18" ry="14" />
-        <ellipse cx="172" cy="78" rx="22" ry="16" />
-        <ellipse cx="198" cy="92" rx="20" ry="15" />
-        <ellipse cx="160" cy="108" rx="24" ry="18" />
-        <ellipse cx="188" cy="118" rx="21" ry="16" />
-      </g>
-    </svg>
-  );
-}
-
-function GreenMoldBagSvg({ className = '' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 320 200" role="img" aria-hidden>
-      <BagRackBackdrop />
-      <rect x="108" y="48" width="104" height="118" rx="8" className="text-surface" fill="currentColor" opacity="0.9" />
-      <rect x="114" y="62" width="92" height="88" rx="4" className="text-brand-primary" fill="currentColor" opacity="0.2" />
-      <g className="text-surface" fill="currentColor" opacity="0.8">
-        <ellipse cx="150" cy="95" rx="20" ry="14" />
-        <ellipse cx="185" cy="105" rx="22" ry="16" />
-      </g>
-      <g className="text-error" fill="currentColor" opacity="0.7">
-        <circle cx="168" cy="90" r="16" />
-        <circle cx="192" cy="102" r="11" />
-        <circle cx="178" cy="118" r="9" />
-      </g>
-      <path
-        d="M218 120 L252 95"
-        className="text-info"
-        stroke="currentColor"
-        strokeWidth="6"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.6"
-      />
-    </svg>
-  );
-}
-
-function HarvestReadyBagSvg({ className = '' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 320 200" role="img" aria-hidden>
-      <BagRackBackdrop />
-      <rect x="108" y="48" width="104" height="118" rx="8" className="text-surface" fill="currentColor" opacity="0.9" />
-      <g className="text-brand-secondary" fill="currentColor" opacity="0.5">
-        <ellipse cx="160" cy="108" rx="34" ry="26" />
-      </g>
-      <g className="text-surface-elevated" fill="currentColor">
-        <ellipse cx="148" cy="98" rx="8" ry="12" />
-        <ellipse cx="162" cy="94" rx="7" ry="11" />
-        <ellipse cx="176" cy="100" rx="8" ry="12" />
-      </g>
-    </svg>
-  );
-}
-
-function SubstrateRotBagSvg({ className = '' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 320 200" role="img" aria-hidden>
-      <BagRackBackdrop />
-      <rect x="108" y="48" width="104" height="118" rx="8" className="text-surface" fill="currentColor" opacity="0.9" />
-      <rect x="114" y="62" width="92" height="88" rx="4" className="text-brand-primary" fill="currentColor" opacity="0.25" />
-      <g className="text-warning" fill="currentColor" opacity="0.55">
-        <ellipse cx="162" cy="145" rx="28" ry="10" />
-      </g>
-      <g className="text-text-primary" fill="currentColor" opacity="0.35">
-        <ellipse cx="155" cy="130" rx="22" ry="14" />
-      </g>
-    </svg>
-  );
-}
-
-function BagRackBackdrop() {
-  return (
-  <>
-      <rect width="320" height="200" className="text-accent" fill="currentColor" opacity="0.08" />
-      <path
-        d="M88 170 H232"
-        className="text-text-secondary"
-        stroke="currentColor"
-        strokeWidth="2"
-        opacity="0.25"
-      />
-      <path d="M96 170 V140 M224 170 V140" className="text-text-secondary" stroke="currentColor" strokeWidth="2" opacity="0.35" />
-    </>
+    <img
+      src={src}
+      alt={alt}
+      className="h-full w-full object-cover"
+    />
   );
 }
 

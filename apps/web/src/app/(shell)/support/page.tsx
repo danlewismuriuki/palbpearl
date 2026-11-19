@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   FormEvent,
   ReactNode,
@@ -606,13 +607,21 @@ function SuccessPanel({
         </aside>
       ) : null}
 
-      <button
-        type="button"
-        onClick={onAnother}
-        className="min-h-12 w-full min-w-0 rounded-lg border border-border bg-surface px-4 text-button font-semibold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-      >
-        Submit another ticket
-      </button>
+      <div className="flex min-w-0 flex-col gap-2">
+        <Link
+          href="/home"
+          className="flex min-h-12 w-full min-w-0 items-center justify-center rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
+          Back to Home →
+        </Link>
+        <button
+          type="button"
+          onClick={onAnother}
+          className="min-h-12 w-full min-w-0 rounded-lg border border-border bg-surface px-4 text-button font-semibold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
+          Submit another ticket
+        </button>
+      </div>
     </div>
   );
 }

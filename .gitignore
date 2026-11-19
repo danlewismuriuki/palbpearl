@@ -8,3 +8,4 @@ coverage
 .DS_Store
 # Raw Stitch export — curated mockups live in docs/design/mockups/
 Figma/
+.cursor/mcp.json

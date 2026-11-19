@@ -2,17 +2,24 @@ import {
   getDarkroomGuideMock,
   getHomeSummaryMock,
   getProductionGuideMock,
+  askAgronomistMock,
+  getAskDeskMock,
+  getMarketPageMock,
   getSupportDeskMock,
   healthCheckMock,
   registerFarmerMock,
   submitSupportTicketMock,
 } from '@palbpearl/mocks';
 import type {
+  AskAgronomistRequest,
+  AskAgronomistResponse,
+  AskDeskResponse,
   DarkroomGuideResponse,
   FarmerRegistrationRequest,
   FarmerRegistrationResponse,
   HealthCheckResponse,
   HomeSummaryResponse,
+  MarketPageResponse,
   ProductionGuideResponse,
   SupportDeskResponse,
   SupportTicketRequest,
@@ -64,6 +71,32 @@ export async function getSupportDesk(): Promise<SupportDeskResponse> {
   if (DATA_SOURCE === 'mock') {
     await new Promise((r) => setTimeout(r, 300));
     return getSupportDeskMock();
+  }
+  throw new Error('Real API not implemented yet');
+}
+
+export async function getAskDesk(): Promise<AskDeskResponse> {
+  if (DATA_SOURCE === 'mock') {
+    await new Promise((r) => setTimeout(r, 250));
+    return getAskDeskMock();
+  }
+  throw new Error('Real API not implemented yet');
+}
+
+export async function askAgronomist(
+  req: AskAgronomistRequest
+): Promise<AskAgronomistResponse> {
+  if (DATA_SOURCE === 'mock') {
+    await new Promise((r) => setTimeout(r, 400));
+    return askAgronomistMock(req);
+  }
+  throw new Error('Real API not implemented yet');
+}
+
+export async function getMarketPage(): Promise<MarketPageResponse> {
+  if (DATA_SOURCE === 'mock') {
+    await new Promise((r) => setTimeout(r, 200));
+    return getMarketPageMock();
   }
   throw new Error('Real API not implemented yet');
 }

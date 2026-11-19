@@ -5,6 +5,10 @@ import type {
   HealthCheckResponse,
   HomeSummaryResponse,
   ProductionGuideResponse,
+  AskAgronomistRequest,
+  AskAgronomistResponse,
+  AskDeskResponse,
+  MarketPageResponse,
   SupportDeskResponse,
   SupportTicketRequest,
   SupportTicketResponse,
@@ -175,9 +179,9 @@ export function getDarkroomGuideMock(): DarkroomGuideResponse {
       id: 'dr-step-7',
       stepNumber: 7,
       totalSteps: DARKROOM_TOTAL,
-      title: 'Add ventilation',
+      title: 'Hang poles and racks',
       instruction:
-        'Cut small openings below the walls and above the door for airflow. Avoid gaps that let in direct sunlight.',
+        'Fix horizontal poles and wire lines inside the shelter. Hang grow bags from the lines and keep them off the floor.',
       imagePlaceholderLabel: 'Step illustration',
       materials: [],
     },
@@ -185,9 +189,9 @@ export function getDarkroomGuideMock(): DarkroomGuideResponse {
       id: 'dr-step-8',
       stepNumber: 8,
       totalSteps: DARKROOM_TOTAL,
-      title: 'Prepare floor and shelves',
+      title: 'Install misting line',
       instruction:
-        'Clear the floor and lay a gravel or stone base. Install wooden shelves for bags and tools — at least 40 cm off the floor.',
+        'Run a simple overhead drip line with fine nozzles. Mist lightly each day to hold humidity without pooling water.',
       imagePlaceholderLabel: 'Step illustration',
       materials: [
         { id: 'mat-gravel', label: 'Gravel or stone', checked: false },
@@ -416,6 +420,48 @@ export function getSupportDeskMock(): SupportDeskResponse {
           visual: 'green_mold_bag',
         },
       ],
+    },
+    source: 'mock',
+  };
+}
+
+export function getAskDeskMock(): AskDeskResponse {
+  return {
+    panel: {
+      pageTitle: 'Ask a farming question',
+      pageSubtitle:
+        'Type a short question about substrate, pests, humidity, or harvest timing.',
+      inputLabel: 'Your question',
+      inputPlaceholder:
+        'e.g. How often should I mist bags during the pinning stage?',
+      submitLabel: 'Ask',
+      offlineFootnote:
+        'Answers are mocked for the demo — a live agronomist model ships in Phase 2.',
+    },
+    source: 'mock',
+  };
+}
+
+export function askAgronomistMock(
+  req: AskAgronomistRequest
+): AskAgronomistResponse {
+  const q = req.question.trim();
+  return {
+    answer:
+      q.length === 0
+        ? 'Please enter a question first.'
+        : `Demo answer: For "${q.slice(0, 80)}${q.length > 80 ? '…' : ''}", keep humidity at 85–90%, ventilate 10 minutes each morning, and log any sour smell or green patches in the darkroom guide.`,
+    source: 'mock',
+  };
+}
+
+export function getMarketPageMock(): MarketPageResponse {
+  return {
+    content: {
+      pageTitle: 'Market',
+      body:
+        'Wholesale prices, buyer contacts, and harvest booking will live here. This screen confirms navigation from Home and the bottom bar while the market module is being built.',
+      backLabel: 'Back to Home →',
     },
     source: 'mock',
   };

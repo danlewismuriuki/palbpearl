@@ -95,9 +95,9 @@ const NAV_ITEMS: Array<{
     Icon: NavIconHelp,
   },
   {
-    href: null,
+    href: '/market',
     label: 'Market',
-    match: () => false,
+    match: (path) => path === '/market' || path.startsWith('/market'),
     Icon: NavIconMarket,
   },
 ];
@@ -137,16 +137,11 @@ export default function AppShell({ title, children }: AppShellProps) {
         <header className="sticky top-0 z-20 flex min-h-12 items-center justify-between gap-2 border-b border-border bg-surface px-4 py-2">
           {isHome ? (
             <span className="flex min-w-0 items-center gap-2">
-              <svg
-                className="h-6 w-6 shrink-0 text-brand-primary"
-                viewBox="0 0 24 24"
-                aria-hidden
-              >
-                <path
-                  fill="currentColor"
-                  d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l.66-1.73C7.5 18.5 9.5 17 12 17s4.5 1.5 5.63 3.27l.66 1.73 1.89-.66C18.1 16.17 16 10 17 8zM12 2a5 5 0 00-5 5c0 4 5 11 5 11s5-7 5-11a5 5 0 00-5-5zm0 7a2 2 0 110-4 2 2 0 010 4z"
-                />
-              </svg>
+              <img
+                src="/assets/brand/logo.svg"
+                alt="PalBpearl"
+                className="h-7 w-auto shrink-0 object-contain"
+              />
               <span className="truncate text-h3 font-bold text-brand-primary">
                 PalBpearl
               </span>
@@ -169,17 +164,11 @@ export default function AppShell({ title, children }: AppShellProps) {
               {isOnline ? 'Online' : 'Offline'}
             </span>
             {isHome ? (
-              <span
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-brand-primary/10 text-caption font-bold text-brand-primary"
-                aria-hidden
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden>
-                  <path
-                    fill="currentColor"
-                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                  />
-                </svg>
-              </span>
+              <img
+                src="/assets/brand/avatar.jpg"
+                alt="Your profile"
+                className="h-9 w-9 shrink-0 rounded-full border border-border object-cover"
+              />
             ) : null}
           </div>
         </header>

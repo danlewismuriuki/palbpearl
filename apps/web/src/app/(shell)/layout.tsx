@@ -8,6 +8,8 @@ const TITLES: Record<string, string> = {
   '/darkroom': 'Darkroom',
   '/production': 'Production',
   '/support': 'Support',
+  '/market': 'Market',
+  '/ask': 'Ask',
 };
 
 export default function ShellLayout({

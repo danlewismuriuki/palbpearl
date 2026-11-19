@@ -38,6 +38,9 @@ export default function HomePage() {
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [summary, setSummary] = useState<HomeSummary | null>(null);
   const [browserOffline, setBrowserOffline] = useState(false);
+  const [completionToast, setCompletionToast] = useState<string | null>(null);
+  const [taskPhase2, setTaskPhase2] = useState<string | null>(null);
+  const [aiPhase2, setAiPhase2] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (forceLoadError) {
@@ -75,10 +78,30 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('completed') === 'darkroom') {
+      setCompletionToast('Darkroom guide complete');
+      params.delete('completed');
+      const next = params.toString();
+      const url = `${window.location.pathname}${next ? `?${next}` : ''}`;
+      window.history.replaceState({}, '', url);
+    }
+  }, []);
+
   const showDashboard = loadState === 'success' && summary;
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
+      {completionToast ? (
+        <p
+          className="rounded-lg bg-success/15 px-4 py-3 text-body font-medium text-success"
+          role="status"
+        >
+          {completionToast}
+        </p>
+      ) : null}
       {loadState === 'error' ? (
         <FormErrorBanner
           heading="Could not load"
@@ -95,7 +118,12 @@ export default function HomePage() {
         <section className="flex min-w-0 flex-col gap-3" aria-live="polite">
           <SyncBanner summary={summary} browserOffline={browserOffline} />
           <GreetingBlock summary={summary} browserOffline={browserOffline} />
-          <AiAgronomistCard />
+          <AiAgronomistCard
+            phase2Message={aiPhase2}
+            onPhase2={() =>
+              setAiPhase2('Voice recording is coming in Phase 2')
+            }
+          />
           {summary.activeBatch ? (
             <ActiveBatchCard batch={summary.activeBatch} />
           ) : null}
@@ -107,17 +135,28 @@ export default function HomePage() {
           <TileLink href="/darkroom" label="My Farm" kind="farm" />
           <TileLink href="/production" label="Learn" kind="learn" />
           <TileLink href="/support" label="Get Help" kind="help" />
-          <MarketTile />
+          <TileLink href="/market" label="Market" kind="market" />
         </section>
       ) : null}
 
       {showDashboard ? (
         <>
-          <InspectionTaskCard reminder={summary.todayReminder} />
+          <InspectionTaskCard
+            reminder={summary.todayReminder}
+            phase2Message={taskPhase2}
+            onPhase2={(kind) =>
+              setTaskPhase2(
+                kind === 'done'
+                  ? 'Task completion logging is coming in Phase 2'
+                  : 'Reading logs are coming in Phase 2'
+              )
+            }
+          />
           {summary.agronomistTip ? (
             <AgronomistTipBanner tip={summary.agronomistTip} />
           ) : null}
           <OfflineExplainerCard />
+          <HomeFooterLinks />
         </>
       ) : null}
     </div>
@@ -228,7 +267,13 @@ function GreetingBlock({
   );
 }
 
-function AiAgronomistCard() {
+function AiAgronomistCard({
+  phase2Message,
+  onPhase2,
+}: {
+  phase2Message: string | null;
+  onPhase2: () => void;
+}) {
   return (
     <article className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
       <div className="flex items-start gap-2">
@@ -249,30 +294,38 @@ function AiAgronomistCard() {
         </div>
       </div>
       <Link
-        href="#"
+        href="/ask"
         data-cta="ask"
         className="flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-primary px-3 text-button font-bold text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
       >
-        {/* TODO: wire agronomist chat route when available */}
         <MicGlyph className="h-5 w-5" />
         Ask a question
       </Link>
       <div className="grid grid-cols-2 gap-2">
-        <Link
-          href="#"
+        <button
+          type="button"
+          onClick={onPhase2}
           className="flex min-h-12 items-center justify-center gap-1 rounded-md bg-brand-primary px-2 text-label font-bold text-text-on-brand shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           <MicGlyph className="h-5 w-5 shrink-0" />
           Record voice
-        </Link>
+        </button>
         <Link
-          href="#"
+          href="/ask"
           className="flex min-h-12 items-center justify-center gap-1 rounded-md bg-accent/30 px-2 text-label font-bold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           <MessageGlyph className="h-5 w-5 shrink-0" />
           Write message
         </Link>
       </div>
+      {phase2Message ? (
+        <p
+          className="rounded-md bg-accent/20 px-3 py-2 text-body text-text-secondary"
+          role="status"
+        >
+          {phase2Message}
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -357,8 +410,12 @@ function BatchRow({
 
 function InspectionTaskCard({
   reminder,
+  phase2Message,
+  onPhase2,
 }: {
   reminder: HomeSummary['todayReminder'];
+  phase2Message: string | null;
+  onPhase2: (kind: 'done' | 'log') => void;
 }) {
   return (
     <article className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
@@ -381,7 +438,15 @@ function InspectionTaskCard({
               {reminder.humidityRange}
             </p>
           </div>
-          <TaskActionButtons />
+          <TaskActionButtons onPhase2={onPhase2} />
+          {phase2Message ? (
+            <p
+              className="rounded-md bg-accent/20 px-3 py-2 text-body text-text-secondary"
+              role="status"
+            >
+              {phase2Message}
+            </p>
+          ) : null}
         </>
       ) : (
         <p className="text-body text-text-secondary">
@@ -392,11 +457,16 @@ function InspectionTaskCard({
   );
 }
 
-function TaskActionButtons() {
+function TaskActionButtons({
+  onPhase2,
+}: {
+  onPhase2: (kind: 'done' | 'log') => void;
+}) {
   return (
     <div className="grid grid-cols-2 gap-2">
       <button
         type="button"
+        onClick={() => onPhase2('done')}
         className="flex min-h-12 items-center justify-center gap-1 rounded-md bg-brand-primary px-2 text-label font-bold text-text-on-brand shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
       >
         <CheckCircleGlyph className="h-5 w-5" />
@@ -404,6 +474,7 @@ function TaskActionButtons() {
       </button>
       <button
         type="button"
+        onClick={() => onPhase2('log')}
         className="flex min-h-12 items-center justify-center gap-1 rounded-md bg-accent/30 px-2 text-label font-bold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
       >
         <ListGlyph className="h-5 w-5" />
@@ -453,7 +524,7 @@ function TileLink({
 }: {
   href: string;
   label: string;
-  kind: 'farm' | 'learn' | 'help';
+  kind: 'farm' | 'learn' | 'help' | 'market';
 }) {
   return (
     <Link
@@ -471,20 +542,22 @@ function TileLink({
   );
 }
 
-function MarketTile() {
+function HomeFooterLinks() {
   return (
-    <span
-      aria-disabled="true"
-      className="flex aspect-square min-w-0 flex-col items-center justify-center gap-1 rounded-lg border border-border bg-surface p-2 text-center opacity-75 shadow-sm"
-    >
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/10">
-        <TileGlyph kind="market" />
-      </span>
-      <span className="text-label font-bold text-text-primary">Market</span>
-      <span className="text-caption font-semibold text-text-secondary">
-        Coming soon
-      </span>
-    </span>
+    <footer className="flex min-w-0 flex-col gap-2 border-t border-border pt-3 text-center">
+      <Link
+        href="/health"
+        className="inline-flex min-h-12 items-center justify-center text-body-small font-medium text-text-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+      >
+        System status
+      </Link>
+      <Link
+        href="/register"
+        className="inline-flex min-h-12 items-center justify-center text-body-small font-medium text-text-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+      >
+        Farmer registration
+      </Link>
+    </footer>
   );
 }
 

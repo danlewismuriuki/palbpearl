@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DarkroomStep } from '@palbpearl/api-contract';
 import { FormErrorBanner } from '@/components/FormErrorBanner';
@@ -9,13 +10,13 @@ import { useDebugQuery } from '@/lib/use-debug-query';
 type LoadState = 'loading' | 'success' | 'error' | 'empty';
 
 export default function DarkroomGuidePage() {
+  const router = useRouter();
   const { forceLoadError } = useDebugQuery();
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [steps, setSteps] = useState<DarkroomStep[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
   const [checkedById, setCheckedById] = useState<Record<string, boolean>>({});
   const [photoComingSoon, setPhotoComingSoon] = useState(false);
-  const [guideFinished, setGuideFinished] = useState(false);
 
   const load = useCallback(async () => {
     if (forceLoadError) {
@@ -24,7 +25,6 @@ export default function DarkroomGuidePage() {
       return;
     }
     setLoadState('loading');
-    setGuideFinished(false);
     try {
       const result = await getDarkroomGuide();
       if (result.steps.length === 0) {
@@ -66,16 +66,14 @@ export default function DarkroomGuidePage() {
   const goNext = () => {
     if (!currentStep) return;
     if (isLastStep) {
-      setGuideFinished(true);
+      router.push('/home?completed=darkroom');
       return;
     }
     setStepIndex((i) => Math.min(i + 1, steps.length - 1));
-    setGuideFinished(false);
   };
 
   const goPrev = () => {
     setStepIndex((i) => Math.max(i - 1, 0));
-    setGuideFinished(false);
   };
 
   const toggleMaterial = (id: string) => {
@@ -149,11 +147,7 @@ export default function DarkroomGuidePage() {
               figureRef={currentStep.imageFigureRef}
             />
             <div className="relative mt-2 aspect-[16/9] w-full min-w-0 overflow-hidden rounded-md border border-border bg-accent/10">
-              {currentStep.imageFigureRef ? (
-                <ShelterOrientationIllustration className="h-full w-full p-2" />
-              ) : (
-                <StepBuildIllustration className="h-full w-full p-3 text-brand-secondary" />
-              )}
+              <DarkroomStepImage step={currentStep} />
             </div>
             {currentStep.imageCaption ? (
               <figcaption className="mt-2 flex items-start gap-2 text-body-small text-text-secondary">
@@ -257,15 +251,6 @@ export default function DarkroomGuidePage() {
             ) : null}
           </section>
 
-          {guideFinished ? (
-            <p
-              className="rounded-lg bg-success/15 px-4 py-3 text-body font-medium text-success"
-              role="status"
-            >
-              You have finished the darkroom build guide.
-            </p>
-          ) : null}
-
           <div className="flex min-w-0 flex-col gap-2 pb-1">
             <button
               type="button"
@@ -273,7 +258,9 @@ export default function DarkroomGuidePage() {
               className="flex min-h-12 w-full min-w-0 items-center justify-center gap-2 rounded-md bg-brand-primary px-3 text-button font-bold text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
             >
               {primaryLabel}
-              {!isLastStep ? <ArrowForwardGlyph className="h-5 w-5 shrink-0" /> : null}
+              {!isLastStep ? (
+                <ArrowForwardGlyph className="h-5 w-5 shrink-0" />
+              ) : null}
             </button>
             {stepIndex > 0 ? (
               <button
@@ -470,133 +457,27 @@ function OfflineGlyph({ className = '' }: { className?: string }) {
   );
 }
 
-/**
- * Flat vector illustration matching darkroom-guide.png Fig 2.1 (not a photo).
- */
-function ShelterOrientationIllustration({ className = '' }: { className?: string }) {
+function DarkroomStepImage({ step }: { step: DarkroomStep }) {
+  const src = `/assets/darkroom/step-${step.stepNumber}.png`;
+  const alt =
+    step.imageTitle ?? step.imagePlaceholderLabel ?? `Step ${step.stepNumber}`;
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return <StepBuildIllustration className="h-full w-full p-3 text-brand-secondary" />;
+  }
+
   return (
-    <svg
-      className={className}
-      viewBox="0 0 320 180"
-      role="img"
-      aria-label="Shelter orientation diagram showing acacia shade, shade net walls, breeze flow, and drainage runoff"
-    >
-      <g className="text-text-secondary" fill="currentColor" opacity="0.25">
-        <rect x="0" y="154" width="320" height="2" rx="1" />
-      </g>
-
-      <g className="text-brand-secondary">
-        <text x="6" y="18" fontSize="9" fontWeight="600" fill="currentColor">
-          Acacia tree shade
-        </text>
-        <circle cx="46" cy="76" r="20" fill="currentColor" opacity="0.45" />
-        <circle cx="70" cy="68" r="24" fill="currentColor" opacity="0.6" />
-        <circle cx="60" cy="90" r="16" fill="currentColor" opacity="0.35" />
-      </g>
-      <g className="text-brand-primary">
-        <rect x="54" y="102" width="10" height="54" rx="1" fill="currentColor" />
-      </g>
-      <g className="text-brand-secondary">
-        <path
-          d="M20 54 L66 40"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeDasharray="2 2"
-          fill="none"
-          opacity="0.6"
-        />
-        <circle cx="20" cy="54" r="2" fill="currentColor" />
-        <circle cx="66" cy="40" r="2" fill="currentColor" />
-      </g>
-
-      <g className="text-brand-primary">
-        <path d="M112 82 L188 52 L268 82 L262 92 L118 92 Z" fill="currentColor" opacity="0.85" />
-        <rect x="116" y="92" width="8" height="64" fill="currentColor" opacity="0.7" />
-        <rect x="148" y="92" width="8" height="64" fill="currentColor" opacity="0.7" />
-        <rect x="220" y="92" width="8" height="64" fill="currentColor" opacity="0.7" />
-        <rect x="252" y="92" width="8" height="64" fill="currentColor" opacity="0.7" />
-      </g>
-
-      <g className="text-brand-secondary">
-        <rect
-          x="124"
-          y="92"
-          width="88"
-          height="64"
-          fill="currentColor"
-          opacity="0.2"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M124 110 h88M124 126 h88M124 142 h88"
-          stroke="currentColor"
-          strokeWidth="0.75"
-          opacity="0.35"
-        />
-        <text x="128" y="108" fontSize="8" fontWeight="600" fill="currentColor">
-          70% shade net
-        </text>
-        <rect
-          x="212"
-          y="92"
-          width="42"
-          height="64"
-          fill="currentColor"
-          opacity="0.12"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeDasharray="4 3"
-        />
-      </g>
-
-      <g className="text-brand-secondary" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M8 108 h38" markerEnd="url(#breezeArrow)" />
-        <path d="M8 118 h44" markerEnd="url(#breezeArrow)" opacity="0.85" />
-        <path d="M8 128 h40" markerEnd="url(#breezeArrow)" opacity="0.7" />
-        <text x="52" y="100" fontSize="9" fontWeight="600" fill="currentColor" stroke="none">
-          Breeze
-        </text>
-      </g>
-
-      <g className="text-brand-secondary" fill="none" stroke="currentColor" strokeWidth="1.25">
-        <path
-          d="M170 158 L210 170 M200 158 L248 172 M228 158 L288 168"
-          strokeDasharray="5 4"
-          markerEnd="url(#drainArrow)"
-        />
-        <text x="178" y="178" fontSize="8" fontWeight="600" fill="currentColor" stroke="none">
-          Drainage runoff
-        </text>
-      </g>
-
-      <defs>
-        <marker
-          id="breezeArrow"
-          markerWidth="6"
-          markerHeight="6"
-          refX="5"
-          refY="3"
-          orient="auto"
-        >
-          <path d="M0 0 L6 3 L0 6 Z" className="text-brand-secondary" fill="currentColor" />
-        </marker>
-        <marker
-          id="drainArrow"
-          markerWidth="6"
-          markerHeight="6"
-          refX="5"
-          refY="3"
-          orient="auto"
-        >
-          <path d="M0 0 L6 3 L0 6 Z" className="text-brand-secondary" fill="currentColor" />
-        </marker>
-      </defs>
-    </svg>
+    <img
+      src={src}
+      alt={alt}
+      className="h-full w-full object-cover"
+      onError={() => setFailed(true)}
+    />
   );
 }
 
-/** Simpler flat build-step motif for later steps (poles + roof). */
+/** Fallback when a step image fails to load. */
 function StepBuildIllustration({ className = '' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 320 180" role="img" aria-hidden>

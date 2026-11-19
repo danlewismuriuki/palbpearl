@@ -275,3 +275,37 @@ export type SupportTicketResponse = {
   successMeta?: SupportTicketSuccessMeta;
   source: 'mock' | 'real';
 };
+
+export type AskAgronomistPanel = {
+  pageTitle: string;
+  pageSubtitle: string;
+  inputLabel: string;
+  inputPlaceholder: string;
+  submitLabel: string;
+  offlineFootnote: string;
+};
+
+export type AskAgronomistRequest = {
+  question: string;
+};
+
+export type AskAgronomistResponse = {
+  answer: string;
+  source: 'mock' | 'real';
+};
+
+export type AskDeskResponse = {
+  panel: AskAgronomistPanel;
+  source: 'mock' | 'real';
+};
+
+export type MarketPlaceholderContent = {
+  pageTitle: string;
+  body: string;
+  backLabel: string;
+};
+
+export type MarketPageResponse = {
+  content: MarketPlaceholderContent;
+  source: 'mock' | 'real';
+};
