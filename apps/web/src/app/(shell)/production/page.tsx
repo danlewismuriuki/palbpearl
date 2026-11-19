@@ -53,7 +53,7 @@ export default function ProductionGuidePage() {
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'sops', label: 'SOPs' },
-    { id: 'doctor', label: 'Daktari wa Mmea' },
+    { id: 'doctor', label: 'Plant Doctor' },
   ];
 
   return (
@@ -64,14 +64,14 @@ export default function ProductionGuidePage() {
           className="flex flex-col gap-3 rounded-lg border border-error/30 bg-error/10 p-4"
         >
           <p className="text-body text-text-primary">
-            Imeshindikana kupakia mwongozo. Jaribu tena.
+            Could not load the guide. Please try again.
           </p>
           <button
             type="button"
             onClick={() => void load()}
             className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
-            Jaribu tena
+            Try again
           </button>
         </div>
       ) : null}
@@ -92,7 +92,7 @@ export default function ProductionGuidePage() {
         <>
           <div
             role="tablist"
-            aria-label="Mwongozo wa uzalishaji"
+            aria-label="Production guide"
             className="flex min-h-12 border-b border-divider"
           >
             {tabs.map((tab) => {
@@ -126,7 +126,7 @@ export default function ProductionGuidePage() {
               className="flex min-w-0 flex-col gap-3"
             >
               {stages.length === 0 ? (
-                <EmptyTab message="Hakuna hatua zilizopatikana" onRetry={() => void load()} />
+                <EmptyTab message="No stages available" onRetry={() => void load()} />
               ) : (
                 <ul className="flex flex-col gap-3">
                   {stages.map((stage) => (
@@ -167,7 +167,7 @@ export default function ProductionGuidePage() {
             >
               {healthCards.length === 0 ? (
                 <EmptyTab
-                  message="Hakuna picha za uchunguzi"
+                  message="No diagnostic images available"
                   onRetry={() => void load()}
                 />
               ) : (
@@ -211,7 +211,7 @@ function StatusBadge({ kind }: { kind: 'healthy' | 'problem' }) {
       }`}
     >
       {isHealthy ? <CheckGlyph /> : <WarningGlyph />}
-      <span>{isHealthy ? 'Afya' : 'Tatizo'}</span>
+      <span>{isHealthy ? 'Healthy' : 'Problem'}</span>
     </span>
   );
 }
@@ -231,7 +231,7 @@ function EmptyTab({
         onClick={onRetry}
         className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
       >
-        Jaribu tena
+        Try again
       </button>
     </div>
   );

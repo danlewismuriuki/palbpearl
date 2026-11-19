@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 
 function NavIconHome({ active }: { active: boolean }) {
-  const fill = active ? 'currentColor' : 'currentColor';
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden className="shrink-0">
       <path
-        fill={fill}
+        fill="currentColor"
+        fillOpacity={active ? 1 : 0.85}
         d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"
       />
     </svg>
@@ -65,7 +65,7 @@ function NavIconMarket({ active }: { active: boolean }) {
 }
 
 const NAV_ITEMS: Array<{
-  href: string;
+  href: string | null;
   label: string;
   match: (path: string) => boolean;
   Icon: (p: { active: boolean }) => ReactNode;
@@ -76,30 +76,26 @@ const NAV_ITEMS: Array<{
     match: (path) => path === '/home',
     Icon: NavIconHome,
   },
-  // TODO: Farm → /farm when route exists
   {
-    href: '#',
+    href: '/darkroom',
     label: 'Farm',
-    match: () => false,
+    match: (path) => path === '/darkroom',
     Icon: NavIconFarm,
   },
-  // TODO: Learn → /learn
   {
-    href: '#',
+    href: '/production',
     label: 'Learn',
-    match: () => false,
+    match: (path) => path === '/production',
     Icon: NavIconLearn,
   },
-  // TODO: Help → /help
   {
-    href: '#',
+    href: '/support',
     label: 'Help',
-    match: () => false,
+    match: (path) => path === '/support',
     Icon: NavIconHelp,
   },
-  // TODO: Market → /market
   {
-    href: '#',
+    href: null,
     label: 'Market',
     match: () => false,
     Icon: NavIconMarket,
@@ -127,6 +123,11 @@ export default function AppShell({ title, children }: AppShellProps) {
       window.removeEventListener('offline', update);
     };
   }, []);
+
+  const navItemClass = (active: boolean) =>
+    `flex min-h-12 min-w-12 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-caption font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+      active ? 'text-brand-primary' : 'text-text-secondary'
+    }`;
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-background">
@@ -157,17 +158,20 @@ export default function AppShell({ title, children }: AppShellProps) {
               const Icon = item.Icon;
               return (
                 <li key={item.label} className="flex min-h-12 flex-1">
-                  <Link
-                    href={item.href}
-                    className={`flex min-h-12 min-w-12 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-caption font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
-                      active
-                        ? 'text-brand-primary'
-                        : 'text-text-secondary'
-                    }`}
-                  >
-                    <Icon active={active} />
-                    <span>{item.label}</span>
-                  </Link>
+                  {item.href ? (
+                    <Link href={item.href} className={navItemClass(active)}>
+                      <Icon active={active} />
+                      <span>{item.label}</span>
+                    </Link>
+                  ) : (
+                    <span
+                      aria-disabled="true"
+                      className={`${navItemClass(false)} cursor-not-allowed opacity-60`}
+                    >
+                      <Icon active={false} />
+                      <span>{item.label}</span>
+                    </span>
+                  )}
                 </li>
               );
             })}

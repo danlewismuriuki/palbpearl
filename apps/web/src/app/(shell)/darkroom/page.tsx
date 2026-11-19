@@ -100,27 +100,27 @@ export default function DarkroomGuidePage() {
           className="flex flex-col gap-3 rounded-lg border border-error/30 bg-error/10 p-4"
         >
           <p className="text-body text-text-primary">
-            Imeshindikana kupakia mwongozo. Angalia muunganisho na ujaribu tena.
+            Could not load the guide. Check your connection and try again.
           </p>
           <button
             type="button"
             onClick={() => void load()}
             className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
-            Jaribu tena
+            Try again
           </button>
         </div>
       ) : null}
 
       {loadState === 'empty' ? (
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
-          <p className="text-body text-text-primary">Hakuna hatua zilizopatikana</p>
+          <p className="text-body text-text-primary">No steps available</p>
           <button
             type="button"
             onClick={() => void load()}
             className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
-            Jaribu tena
+            Try again
           </button>
         </div>
       ) : null}
@@ -142,10 +142,10 @@ export default function DarkroomGuidePage() {
           <div className="min-w-0 rounded-xl border border-border bg-surface p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2">
               <p className="text-label font-bold text-brand-secondary">
-                Hatua {currentStep.stepNumber} kati ya {currentStep.totalSteps}
+                Step {currentStep.stepNumber} of {currentStep.totalSteps}
               </p>
               <span className="text-caption font-semibold text-text-secondary">
-                Moduli 02
+                Module 02
               </span>
             </div>
             <div
@@ -154,7 +154,7 @@ export default function DarkroomGuidePage() {
               aria-valuenow={currentStep.stepNumber}
               aria-valuemin={1}
               aria-valuemax={currentStep.totalSteps}
-              aria-label="Maendeleo ya mwongozo"
+              aria-label="Guide progress"
             >
               <div
                 className="h-full rounded-full bg-brand-secondary transition-all"
@@ -165,7 +165,7 @@ export default function DarkroomGuidePage() {
 
           <div className="flex aspect-video w-full min-w-0 items-center justify-center rounded-xl border border-border bg-surface-elevated p-4">
             <p className="text-center text-body-small text-text-secondary">
-              Picha ya hatua
+              Step illustration
             </p>
           </div>
 
@@ -177,7 +177,7 @@ export default function DarkroomGuidePage() {
           {currentStep.materials.length > 0 ? (
             <section className="rounded-xl border border-border bg-surface p-4 shadow-sm">
               <h3 className="text-h3 font-semibold text-text-primary">
-                Vifaa vinavyohitajika
+                Materials checklist
               </h3>
               <ul className="mt-3 flex flex-col gap-1">
                 {currentStep.materials.map((material) => {
@@ -210,31 +210,12 @@ export default function DarkroomGuidePage() {
             </section>
           ) : null}
 
-          <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => setPhotoComingSoon(true)}
-              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface-elevated px-4 text-button font-semibold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-            >
-              <CameraIcon />
-              Hifadhi picha ya chumba
-            </button>
-            {photoComingSoon ? (
-              <p
-                className="rounded-lg bg-accent/20 px-4 py-3 text-body text-text-secondary"
-                role="status"
-              >
-                Upigaji picha unakuja katika Awamu ya 2
-              </p>
-            ) : null}
-          </div>
-
           {guideFinished ? (
             <p
               className="rounded-lg bg-success/15 px-4 py-3 text-body font-medium text-success"
               role="status"
             >
-              Umekamilisha mwongozo wa ujenzi wa chumba cha giza.
+              You have finished the darkroom build guide.
             </p>
           ) : null}
 
@@ -244,7 +225,7 @@ export default function DarkroomGuidePage() {
               onClick={goNext}
               className="flex min-h-12 w-full items-center justify-center rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
             >
-              {isLastStep ? 'Maliza mwongozo' : 'Hatua inayofuata'}
+              {isLastStep ? 'Finish guide' : 'Next step'}
             </button>
             {stepIndex > 0 ? (
               <button
@@ -252,8 +233,24 @@ export default function DarkroomGuidePage() {
                 onClick={goPrev}
                 className="min-h-12 w-full text-button font-semibold text-brand-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               >
-                Hatua iliyopita
+                Previous step
               </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setPhotoComingSoon(true)}
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface-elevated px-4 text-button font-semibold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
+              <CameraIcon />
+              Save photo of darkroom
+            </button>
+            {photoComingSoon ? (
+              <p
+                className="rounded-lg bg-accent/20 px-4 py-3 text-body text-text-secondary"
+                role="status"
+              >
+                Camera capture is coming in Phase 2
+              </p>
             ) : null}
           </div>
         </div>

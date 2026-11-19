@@ -4,10 +4,10 @@ import AppShell from '@/components/AppShell';
 import { usePathname } from 'next/navigation';
 
 const TITLES: Record<string, string> = {
-  '/home': 'Nyumbani',
-  '/darkroom': 'Chumba cha Giza',
-  '/production': 'Uzalishaji',
-  '/support': 'Msaada',
+  '/home': 'Home',
+  '/darkroom': 'Darkroom',
+  '/production': 'Production',
+  '/support': 'Support',
 };
 
 export default function ShellLayout({

@@ -27,24 +27,24 @@ const EMPTY_FORM: FormValues = {
 };
 
 const CATEGORY_OPTIONS: { value: SupportIssueCategory; label: string }[] = [
-  { value: 'contamination', label: 'Uchafuzi' },
-  { value: 'pests', label: 'Wadudu' },
-  { value: 'humidity', label: 'Unyevu' },
-  { value: 'temperature', label: 'Joto' },
-  { value: 'other', label: 'Nyingine' },
+  { value: 'contamination', label: 'Contamination' },
+  { value: 'pests', label: 'Pests' },
+  { value: 'humidity', label: 'Humidity' },
+  { value: 'temperature', label: 'Temperature' },
+  { value: 'other', label: 'Other' },
 ];
 
 const CATEGORY_LABELS: Record<SupportIssueCategory, string> = {
-  contamination: 'Uchafuzi',
-  pests: 'Wadudu',
-  humidity: 'Unyevu',
-  temperature: 'Joto',
-  other: 'Nyingine',
+  contamination: 'Contamination',
+  pests: 'Pests',
+  humidity: 'Humidity',
+  temperature: 'Temperature',
+  other: 'Other',
 };
 
 const FIELD_LABELS: Record<FieldKey, string> = {
-  category: 'Aina ya tatizo',
-  description: 'Maelezo ya tatizo',
+  category: 'Issue category',
+  description: 'Issue description',
 };
 
 const DESCRIPTION_MIN = 10;
@@ -53,18 +53,18 @@ const DESCRIPTION_MAX = 500;
 function validateField(key: FieldKey, values: FormValues): string | undefined {
   switch (key) {
     case 'category':
-      if (!values.category) return 'Chagua aina ya tatizo';
+      if (!values.category) return 'Choose an issue category';
       return undefined;
     case 'description': {
       const len = values.description.trim().length;
       if (len === 0) {
-        return 'Eleza tatizo kwa sentensi moja au mbili (herufi 10–500)';
+        return 'Describe the issue in one or two sentences (10–500 characters)';
       }
       if (len < DESCRIPTION_MIN) {
-        return 'Ongeza maelezo — angalau herufi 10 zinahitajika';
+        return 'Add more detail — at least 10 characters required';
       }
       if (len > DESCRIPTION_MAX) {
-        return 'Fupisha maelezo — herufi si zaidi ya 500';
+        return 'Shorten the description — maximum 500 characters';
       }
       return undefined;
     }
@@ -277,7 +277,7 @@ export default function SupportTicketPage() {
     } catch {
       setUiState('error');
       setSubmitError(
-        'Imeshindikana kutuma tiketi. Angalia muunganisho na ujaribu tena.'
+        'Could not submit the ticket. Check your connection and try again.'
       );
     }
   };
@@ -296,8 +296,8 @@ export default function SupportTicketPage() {
 
   if (uiState === 'success' && ticket) {
     const statusLabel = successWasOffline
-      ? 'Imehifadhiwa — itatumwa mtakapokuwa na mtandao'
-      : 'Imetumwa — tutakujibu hapa';
+      ? 'Saved — it will be sent when you have network'
+      : 'Submitted — we will reply here';
 
     return (
       <div className="flex min-w-0 flex-col gap-4">
@@ -306,14 +306,14 @@ export default function SupportTicketPage() {
           aria-live="polite"
         >
           <h2 className="text-h2 font-bold text-text-primary">
-            Tiketi imeundwa
+            Ticket created
           </h2>
           <p className="text-body text-text-secondary">
-            <span className="font-medium text-text-primary">Nambari:</span>{' '}
+            <span className="font-medium text-text-primary">Number:</span>{' '}
             {ticket.id}
           </p>
           <p className="text-body text-text-secondary">
-            <span className="font-medium text-text-primary">Aina:</span>{' '}
+            <span className="font-medium text-text-primary">Category:</span>{' '}
             {CATEGORY_LABELS[ticket.category]}
           </p>
           <p className="break-words text-body text-text-primary">
@@ -329,7 +329,7 @@ export default function SupportTicketPage() {
           onClick={resetForm}
           className="min-h-12 w-full rounded-lg border border-border bg-surface px-4 text-button font-semibold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
-          Tuma tiketi nyingine
+          Submit another ticket
         </button>
       </div>
     );
@@ -344,8 +344,8 @@ export default function SupportTicketPage() {
         >
           <WarningGlyph />
           <p className="text-body font-medium text-text-primary">
-            Uko nje ya mtandao. Tiketi yako itahifadhiwa na kutumwa ukiwa na
-            muunganisho.
+            You are offline. Your ticket will be saved and sent when you have
+            network.
           </p>
         </div>
       ) : null}
@@ -361,7 +361,7 @@ export default function SupportTicketPage() {
             onClick={() => void runSubmit()}
             className="min-h-12 self-start rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
-            Jaribu tena
+            Try again
           </button>
         </div>
       ) : null}
@@ -373,7 +373,7 @@ export default function SupportTicketPage() {
             className="rounded-lg border border-error/30 bg-error/10 p-4"
           >
             <p className="mb-2 text-label font-medium text-error">
-              Tafadhali rekebisha yafuatayo:
+              Please fix the following:
             </p>
             <ul className="flex flex-col gap-1">
               {errorEntries.map((key) => (
@@ -392,7 +392,7 @@ export default function SupportTicketPage() {
 
         <div className="flex flex-col gap-1">
           <span className="text-label font-medium text-text-secondary">
-            Kitambulisho cha mkulima
+            Farmer ID
           </span>
           <p className="min-h-12 rounded-lg bg-surface-elevated px-4 py-3 text-body text-text-secondary">
             {FARMER_ID}
@@ -401,7 +401,7 @@ export default function SupportTicketPage() {
 
         <div className="flex flex-col gap-1">
           <label htmlFor={fieldId('category')} className="text-label font-medium text-text-primary">
-            Aina ya tatizo
+            Issue category
           </label>
           <select
             id={fieldId('category')}
@@ -418,7 +418,7 @@ export default function SupportTicketPage() {
             }
             className={`${controlBase} h-14`}
           >
-            <option value="">Chagua…</option>
+            <option value="">Select…</option>
             {CATEGORY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -441,7 +441,7 @@ export default function SupportTicketPage() {
             htmlFor={fieldId('description')}
             className="text-label font-medium text-text-primary"
           >
-            Maelezo ya tatizo
+            Issue description
           </label>
           <textarea
             id={fieldId('description')}
@@ -469,7 +469,7 @@ export default function SupportTicketPage() {
               </p>
             ) : (
               <span className="text-body-small text-text-secondary">
-                Eleza kwa sentensi moja au mbili
+                Describe in one or two sentences
               </span>
             )}
             <span
@@ -495,12 +495,12 @@ export default function SupportTicketPage() {
             {values.hasPhoto ? (
               <>
                 <CheckGlyph />
-                Picha imeongezwa
+                Photo added
               </>
             ) : (
               <>
                 <CameraGlyph />
-                Ongeza picha
+                Add photo
               </>
             )}
           </button>
@@ -513,7 +513,7 @@ export default function SupportTicketPage() {
               }
               className="min-h-12 self-start text-label font-semibold text-brand-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
             >
-              Ondoa
+              Remove
             </button>
           ) : null}
         </div>
@@ -526,14 +526,14 @@ export default function SupportTicketPage() {
           {isSubmitting ? (
             <>
               <SpinnerGlyph />
-              Inatuma…
+              Submitting…
             </>
           ) : (
-            'Tuma tiketi'
+            'Submit ticket'
           )}
         </button>
         <p className="text-center text-body-small text-text-secondary">
-          Tiketi zote hupitiwa na mtaalamu wa uyoga.
+          All tickets are reviewed by a mushroom specialist.
         </p>
       </form>
     </div>

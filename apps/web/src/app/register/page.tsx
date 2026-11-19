@@ -271,19 +271,19 @@ export default function RegisterPage() {
   if (uiState === 'success' && farmer) {
     return (
       <main className="min-h-screen w-full overflow-x-hidden bg-accent/20 px-4 pb-10 pt-4">
-        <button
-          type="button"
-          onClick={resetForm}
-          className="text-label font-semibold text-brand-secondary underline"
-        >
-          ← Register another farmer
-        </button>
         <Link
           href="/home"
-          className="mt-2 inline-flex min-h-12 items-center text-label font-semibold text-brand-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          className="flex min-h-12 w-full items-center justify-center rounded-lg bg-brand-primary px-4 text-button font-bold text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           Continue to Home →
         </Link>
+        <button
+          type="button"
+          onClick={resetForm}
+          className="mt-3 min-h-12 w-full text-label font-semibold text-brand-secondary underline"
+        >
+          Register another farmer
+        </button>
         <section
           className="mt-4 flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm"
           aria-live="polite"
@@ -303,46 +303,70 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen w-full overflow-x-hidden bg-accent/20 px-4 pb-10 pt-4">
-      {/* Offline banner — matches mobile Stitch */}
-      <div
-        role="status"
-        className="mb-4 flex items-start gap-3 rounded-xl bg-accent/30 p-4 shadow-sm"
-      >
-        <Icon
-          name="cloud_off"
-          filled
-          className="shrink-0 text-lg text-brand-primary"
-        />
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-h3 font-semibold text-text-primary">
-            Offline Mode Active
-            <span
-              className="inline-block h-2 w-2 rounded-full bg-brand-primary"
-              aria-hidden="true"
+    <main className="mx-auto min-h-screen w-full max-w-layout-content overflow-x-hidden bg-accent/20 px-4 pb-10 pt-4">
+      <div className="mb-4 flex min-h-12 items-center justify-between gap-2 rounded-xl border border-border bg-surface px-3 py-2 shadow-sm">
+        <Link
+          href="/home"
+          className="flex min-h-12 min-w-12 items-center justify-center text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          aria-label="Back to home"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
+            <path
+              fill="currentColor"
+              d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
             />
-          </p>
-          <p className="mt-1 text-body text-text-secondary">
-            This form will save directly to your phone storage and sync
-            automatically when internet is detected.
-            {isOffline ? ' You are offline now.' : null}
-          </p>
+          </svg>
+        </Link>
+        <p className="truncate text-h3 font-bold text-text-primary">
+          Farmer registration
+        </p>
+        <div className="flex shrink-0 items-center gap-2">
+          <span
+            role="status"
+            className={`inline-flex min-h-8 items-center rounded-full px-3 text-caption font-semibold ${
+              isOffline
+                ? 'bg-warning/15 text-warning'
+                : 'bg-success/15 text-success'
+            }`}
+          >
+            {isOffline ? 'Offline' : 'Online'}
+          </span>
+          <span
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface-elevated text-caption font-bold text-text-secondary"
+            aria-hidden
+          >
+            FP
+          </span>
         </div>
       </div>
 
-      {/* Screen header — outside form card */}
-      <header className="mb-6 flex flex-col gap-1">
+      {isOffline ? (
+        <div
+          role="status"
+          className="mb-4 flex items-start gap-3 rounded-xl bg-warning/15 p-4"
+        >
+          <Icon
+            name="cloud_off"
+            filled
+            className="shrink-0 text-lg text-warning"
+          />
+          <p className="text-body text-text-primary">
+            You are offline. This form saves on your device and syncs when you
+            have network.
+          </p>
+        </div>
+      ) : null}
+
+      <section className="mb-6 flex flex-col gap-2 rounded-xl border border-border bg-surface p-4 shadow-sm">
         <p className="text-caption font-bold uppercase tracking-wider text-brand-secondary">
-          Module 01 • Ushirika wa Wakulima
+          Module 01 • Farmer cooperative
         </p>
-        <h1 className="text-h1 font-bold text-text-primary">
-          Usajili wa Mkulima
-        </h1>
+        <h1 className="text-h2 font-bold text-text-primary">Register your farm</h1>
         <p className="text-body text-text-secondary">
-          Sajili shamba lako la uyoga upate mwongozo wa ukuzaji, utabiri wa
-          mavuno, na uhusiano wa soko la ndani.
+          Join the cooperative to get growing guides, harvest forecasts, and
+          local market links.
         </p>
-      </header>
+      </section>
 
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
         {uiState === 'error' && submitError ? (
@@ -385,8 +409,8 @@ export default function RegisterPage() {
               htmlFor={fieldId('fullName')}
               className="flex items-center justify-between text-label font-bold text-text-primary"
             >
-              <span>Jina Kamili</span>
-              <span className="font-medium text-brand-secondary">Lazima</span>
+              <span>Full name</span>
+              <span className="font-medium text-brand-secondary">Required</span>
             </label>
             <div className="relative">
               <input
@@ -415,7 +439,7 @@ export default function RegisterPage() {
           {/* Gender */}
           <fieldset className="flex flex-col gap-1" disabled={formDisabled}>
             <legend className="text-label font-bold text-text-primary">
-              Jinsia
+              Gender
             </legend>
             <div className="grid grid-cols-2 gap-2" role="radiogroup">
               {(['male', 'female'] as const).map((option) => {
@@ -439,7 +463,7 @@ export default function RegisterPage() {
                       className="sr-only"
                       id={option === 'male' ? fieldId('gender') : undefined}
                     />
-                    {option === 'male' ? 'Mume' : 'Mke'}
+                    {option === 'male' ? 'Male' : 'Female'}
                     <Icon
                       name={selected ? 'check_box' : 'check_box_outline_blank'}
                       filled={selected}
@@ -460,7 +484,7 @@ export default function RegisterPage() {
               htmlFor={fieldId('ageOrYear')}
               className="text-label font-bold text-text-primary"
             >
-              Umri au Mwaka wa Kuzaliwa
+              Age or year of birth
             </label>
             <input
               id={fieldId('ageOrYear')}
@@ -491,9 +515,9 @@ export default function RegisterPage() {
               htmlFor={fieldId('phoneLocal')}
               className="flex items-center justify-between text-label font-bold text-text-primary"
             >
-              <span>Nambari ya Simu (M-PESA / SMS)</span>
+              <span>Phone (M-PESA / SMS)</span>
               {phoneError ? (
-                <span className="font-medium text-error">Hatua inahitajika</span>
+                <span className="font-medium text-error">Required</span>
               ) : null}
             </label>
             <div
@@ -545,8 +569,8 @@ export default function RegisterPage() {
               htmlFor={fieldId('email')}
               className="text-label font-bold text-text-primary"
             >
-              Barua Pepe{' '}
-              <span className="font-normal text-text-secondary">(Si lazima)</span>
+              Email{' '}
+              <span className="font-normal text-text-secondary">(optional)</span>
             </label>
             <input
               id={fieldId('email')}
@@ -573,10 +597,10 @@ export default function RegisterPage() {
           <section className="flex flex-col gap-4 pt-1">
             <div className="flex items-center justify-between">
               <h2 className="text-label font-bold uppercase tracking-wide text-text-primary">
-                Eneo la Shamba
+                Farm location
               </h2>
               <span className="text-label font-medium text-brand-secondary">
-                Mahali pa Shamba
+                Farm site
               </span>
             </div>
 
@@ -648,7 +672,7 @@ export default function RegisterPage() {
               className="flex h-14 min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-accent/30 text-label font-bold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60"
             >
               <Icon name="my_location" filled className="text-h3" />
-              Pin My Farm Location (Offline GPS)
+              Pin My Farm GPS
             </button>
             {gpsComingSoon ? (
               <div className="mt-1 flex items-start gap-2 rounded-lg bg-brand-secondary/15 p-3 text-brand-secondary">
@@ -681,7 +705,7 @@ export default function RegisterPage() {
             ) : (
               <>
                 <Icon name="how_to_reg" className="text-h3" />
-                Register Farm
+                Register farmer
               </>
             )}
           </button>
