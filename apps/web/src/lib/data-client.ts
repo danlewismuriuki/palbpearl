@@ -2,6 +2,7 @@ import {
   getDarkroomGuideMock,
   getHomeSummaryMock,
   getProductionGuideMock,
+  getSupportDeskMock,
   healthCheckMock,
   registerFarmerMock,
   submitSupportTicketMock,
@@ -13,6 +14,7 @@ import type {
   HealthCheckResponse,
   HomeSummaryResponse,
   ProductionGuideResponse,
+  SupportDeskResponse,
   SupportTicketRequest,
   SupportTicketResponse,
 } from '@palbpearl/api-contract';
@@ -54,6 +56,14 @@ export async function getProductionGuide(): Promise<ProductionGuideResponse> {
   if (DATA_SOURCE === 'mock') {
     await new Promise((r) => setTimeout(r, 300));
     return getProductionGuideMock();
+  }
+  throw new Error('Real API not implemented yet');
+}
+
+export async function getSupportDesk(): Promise<SupportDeskResponse> {
+  if (DATA_SOURCE === 'mock') {
+    await new Promise((r) => setTimeout(r, 300));
+    return getSupportDeskMock();
   }
   throw new Error('Real API not implemented yet');
 }

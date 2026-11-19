@@ -5,6 +5,7 @@ import type {
   HealthCheckResponse,
   HomeSummaryResponse,
   ProductionGuideResponse,
+  SupportDeskResponse,
   SupportTicketRequest,
   SupportTicketResponse,
 } from '@palbpearl/api-contract';
@@ -364,15 +365,91 @@ export function getProductionGuideMock(): ProductionGuideResponse {
   };
 }
 
+export function getSupportDeskMock(): SupportDeskResponse {
+  return {
+    meta: {
+      moduleLabel: 'Module 5 • Agronomy desk',
+      storageBadgeLabel: 'Local SQLite',
+      pageTitle: 'Submit technical support ticket',
+      pageSubtitle:
+        'Get direct advice from an agricultural extension officer.',
+      categoryAside: 'Extension priority',
+      descriptionHint: 'Explain what you see, smell, and when it started.',
+      photoSectionLabel: 'Attach photos (up to 3)',
+      photoMaxCount: 3,
+      voiceSectionLabel: 'Voice description (Swahili or English)',
+      voiceAside: 'Audio memo',
+      voicePrompt: 'Speak your problem / Officers listen to voice…',
+      voiceRecordLabel: 'Record',
+      submitLabel: 'Submit ticket',
+      submitFootnote: 'Encrypted & queued in local browser storage',
+      offlineBannerTitle: 'Offline queue active',
+      offlineBannerBody:
+        'You are offline. Your ticket will be saved safely in your browser and sent automatically when you have network.',
+    },
+    farmer: {
+      verifiedLabel: 'Verified farm account',
+      accountId: 'KBU-0842',
+      farmerName: 'Mwangi Kamau',
+      locationLine: 'Kiambu Unit #1 • Oyster shed A',
+    },
+    categories: [
+      {
+        value: 'contamination',
+        label: 'Substrate contamination & mold',
+      },
+      { value: 'pests', label: 'Pests & insects' },
+      { value: 'humidity', label: 'Humidity & misting' },
+      { value: 'temperature', label: 'Temperature stress' },
+      { value: 'other', label: 'Other production issue' },
+    ],
+    defaults: {
+      category: 'contamination',
+      description:
+        'Green powder appeared on 4 bags in Darkroom 1 after second misting. Bags have sour smell.',
+      attachments: [
+        {
+          id: 'att-1',
+          fileName: 'bag_photo_01.jpg',
+          sizeLabel: '280 KB',
+          storedOffline: true,
+          visual: 'green_mold_bag',
+        },
+      ],
+    },
+    source: 'mock',
+  };
+}
+
 export function submitSupportTicketMock(
   req: SupportTicketRequest
 ): SupportTicketResponse {
+  const displayTicketId = 'TK-294';
+  const emergencyTip =
+    req.category === 'contamination'
+      ? {
+          title: 'Emergency tip: green mold outbreak',
+          body:
+            'While waiting for officer review, immediately isolate the affected 4 bags outside the darkroom to prevent spores from spreading.',
+        }
+      : undefined;
+
   return {
     ticket: {
       ...req,
       id: `mock-ticket-${Date.now()}`,
+      displayId: displayTicketId,
       createdAt: new Date().toISOString(),
-      status: 'pending_sync',
+      status: 'submitted',
+    },
+    successMeta: {
+      displayTicketId,
+      statusBadge: 'Queued',
+      replyMessage:
+        'Ticket submitted — we will reply here via SMS and web notification once officer reviews.',
+      smsDispatchPrefix: 'SMS dispatch assigned to:',
+      smsOfficerName: 'Agrono…',
+      emergencyTip,
     },
     source: 'mock',
   };

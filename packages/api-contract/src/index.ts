@@ -187,6 +187,75 @@ export type SupportIssueCategory =
   | 'temperature'
   | 'other';
 
+export type SupportAttachmentVisual = 'green_mold_bag';
+
+export type SupportDemoAttachment = {
+  id: string;
+  fileName: string;
+  sizeLabel: string;
+  storedOffline: boolean;
+  visual: SupportAttachmentVisual;
+};
+
+export type SupportFarmerContext = {
+  verifiedLabel: string;
+  accountId: string;
+  farmerName: string;
+  locationLine: string;
+};
+
+export type SupportCategoryOption = {
+  value: SupportIssueCategory;
+  label: string;
+};
+
+export type SupportDeskMeta = {
+  moduleLabel: string;
+  storageBadgeLabel: string;
+  pageTitle: string;
+  pageSubtitle: string;
+  categoryAside: string;
+  descriptionHint: string;
+  photoSectionLabel: string;
+  photoMaxCount: number;
+  voiceSectionLabel: string;
+  voiceAside: string;
+  voicePrompt: string;
+  voiceRecordLabel: string;
+  submitLabel: string;
+  submitFootnote: string;
+  offlineBannerTitle: string;
+  offlineBannerBody: string;
+};
+
+export type SupportDeskDefaults = {
+  category: SupportIssueCategory;
+  description: string;
+  attachments: SupportDemoAttachment[];
+};
+
+export type SupportDeskResponse = {
+  meta: SupportDeskMeta;
+  farmer: SupportFarmerContext;
+  categories: SupportCategoryOption[];
+  defaults: SupportDeskDefaults;
+  source: 'mock' | 'real';
+};
+
+export type SupportEmergencyTip = {
+  title: string;
+  body: string;
+};
+
+export type SupportTicketSuccessMeta = {
+  displayTicketId: string;
+  statusBadge: string;
+  replyMessage: string;
+  smsDispatchPrefix: string;
+  smsOfficerName: string;
+  emergencyTip?: SupportEmergencyTip;
+};
+
 export type SupportTicketRequest = {
   farmerId: string;
   category: SupportIssueCategory;
@@ -196,11 +265,13 @@ export type SupportTicketRequest = {
 
 export type SupportTicket = SupportTicketRequest & {
   id: string;
+  displayId?: string;
   createdAt: string;
   status: 'pending_sync' | 'submitted';
 };
 
 export type SupportTicketResponse = {
   ticket: SupportTicket;
+  successMeta?: SupportTicketSuccessMeta;
   source: 'mock' | 'real';
 };
