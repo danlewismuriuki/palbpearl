@@ -7,6 +7,7 @@ const TITLES: Record<string, string> = {
   '/home': 'Nyumbani',
   '/darkroom': 'Chumba cha Giza',
   '/production': 'Uzalishaji',
+  '/support': 'Msaada',
 };
 
 export default function ShellLayout({

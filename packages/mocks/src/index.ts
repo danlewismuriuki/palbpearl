@@ -5,6 +5,8 @@ import type {
   HealthCheckResponse,
   HomeSummaryResponse,
   ProductionGuideResponse,
+  SupportTicketRequest,
+  SupportTicketResponse,
 } from '@palbpearl/api-contract';
 
 const DARKROOM_TOTAL = 8;
@@ -217,6 +219,20 @@ export function getProductionGuideMock(): ProductionGuideResponse {
         imagePlaceholderLabel: 'Picha ya mfano',
       },
     ],
+    source: 'mock',
+  };
+}
+
+export function submitSupportTicketMock(
+  req: SupportTicketRequest
+): SupportTicketResponse {
+  return {
+    ticket: {
+      ...req,
+      id: `mock-ticket-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      status: 'pending_sync',
+    },
     source: 'mock',
   };
 }

@@ -90,3 +90,28 @@ export type ProductionGuideResponse = {
   healthCards: PlantHealthCard[];
   source: 'mock' | 'real';
 };
+
+export type SupportIssueCategory =
+  | 'contamination'
+  | 'pests'
+  | 'humidity'
+  | 'temperature'
+  | 'other';
+
+export type SupportTicketRequest = {
+  farmerId: string;
+  category: SupportIssueCategory;
+  description: string;
+  hasPhoto: boolean;
+};
+
+export type SupportTicket = SupportTicketRequest & {
+  id: string;
+  createdAt: string;
+  status: 'pending_sync' | 'submitted';
+};
+
+export type SupportTicketResponse = {
+  ticket: SupportTicket;
+  source: 'mock' | 'real';
+};

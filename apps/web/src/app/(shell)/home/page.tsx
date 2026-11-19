@@ -111,8 +111,7 @@ export default function HomePage() {
       <section className="grid grid-cols-2 gap-3">
         <TileLink href="/darkroom" label="Shamba Yangu (My Farm)" />
         <TileLink href="/production" label="Jifunze (Learn)" />
-        {/* TODO: Get Help → /help */}
-        <TileLink href="#" label="Msaada (Get Help)" />
+        <TileLink href="/support" label="Msaada (Get Help)" />
         {/* TODO: Market → /market */}
         <TileLink href="#" label="Soko (Market)" />
       </section>

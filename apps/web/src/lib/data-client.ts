@@ -4,6 +4,7 @@ import {
   getProductionGuideMock,
   healthCheckMock,
   registerFarmerMock,
+  submitSupportTicketMock,
 } from '@palbpearl/mocks';
 import type {
   DarkroomGuideResponse,
@@ -12,6 +13,8 @@ import type {
   HealthCheckResponse,
   HomeSummaryResponse,
   ProductionGuideResponse,
+  SupportTicketRequest,
+  SupportTicketResponse,
 } from '@palbpearl/api-contract';
 
 const DATA_SOURCE = process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock';
@@ -51,6 +54,16 @@ export async function getProductionGuide(): Promise<ProductionGuideResponse> {
   if (DATA_SOURCE === 'mock') {
     await new Promise((r) => setTimeout(r, 300));
     return getProductionGuideMock();
+  }
+  throw new Error('Real API not implemented yet');
+}
+
+export async function submitSupportTicket(
+  req: SupportTicketRequest
+): Promise<SupportTicketResponse> {
+  if (DATA_SOURCE === 'mock') {
+    await new Promise((r) => setTimeout(r, 500));
+    return submitSupportTicketMock(req);
   }
   throw new Error('Real API not implemented yet');
 }
