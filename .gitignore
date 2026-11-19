@@ -1,0 +1,10 @@
+node_modules
+.next
+.env*
+!.env.example
+dist
+build
+coverage
+.DS_Store
+# Raw Stitch export — curated mockups live in docs/design/mockups/
+Figma/

@@ -1,0 +1,28 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "overrides": [
+    {
+      "files": ["src/**/*.{ts,tsx}"],
+      "excludedFiles": ["src/lib/data-client.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@palbpearl/mocks",
+                "message": "Import @palbpearl/mocks only through src/lib/data-client.ts (ADR-009)."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["@palbpearl/mocks/*"],
+                "message": "Import @palbpearl/mocks only through src/lib/data-client.ts (ADR-009)."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

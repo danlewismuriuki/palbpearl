@@ -1,0 +1,9 @@
+{
+  "name": "palbpearl",
+  "private": true,
+  "scripts": {
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint",
+    "dev": "pnpm --filter web dev"
+  }
+}
