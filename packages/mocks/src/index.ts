@@ -41,8 +41,8 @@ export function registerFarmerMock(
 export function getHomeSummaryMock(): HomeSummaryResponse {
   return {
     summary: {
-      farmerDisplayName: 'Joy Odhiambo',
-      greetingLine: 'Habari, Joy!',
+      farmerDisplayName: 'Joy Atieno',
+      greetingLine: 'Habari, Joy Atieno!',
       farmerId: 'mock-farmer-001',
       farmUnitLabel: 'Kisumu Oyster Mushroom Unit #1',
       lastSyncedDisplay: 'Today 08:30 AM',
