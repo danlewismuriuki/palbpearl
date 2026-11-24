@@ -41,9 +41,9 @@ export function registerFarmerMock(
 export function getHomeSummaryMock(): HomeSummaryResponse {
   return {
     summary: {
-      farmerDisplayName: 'Wanjiku Kamau',
+      farmerDisplayName: 'Joy Odhiambo',
       farmerId: 'mock-farmer-001',
-      farmUnitLabel: 'Kiambu Oyster Mushroom Unit #1',
+      farmUnitLabel: 'Kisumu Oyster Mushroom Unit #1',
       lastSyncedDisplay: 'Today 08:30 AM',
       syncStatus: 'synced',
       pendingCount: 0,
@@ -394,8 +394,8 @@ export function getSupportDeskMock(): SupportDeskResponse {
     farmer: {
       verifiedLabel: 'Verified farm account',
       accountId: 'KBU-0842',
-      farmerName: 'Mwangi Kamau',
-      locationLine: 'Kiambu Unit #1 • Oyster shed A',
+      farmerName: 'Atieno Joy',
+      locationLine: 'Kisumu Unit #1 • Oyster shed A',
     },
     categories: [
       {
