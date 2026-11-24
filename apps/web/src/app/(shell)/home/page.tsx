@@ -9,30 +9,6 @@ import { useDebugQuery } from '@/lib/use-debug-query';
 
 type LoadState = 'loading' | 'success' | 'error';
 
-function syncStatusLine(summary: HomeSummary, browserOffline: boolean): string {
-  if (browserOffline) return 'Offline — changes will sync later';
-  if (summary.syncStatus === 'offline') return 'Offline — changes will sync later';
-  if (summary.pendingCount > 0) {
-    return `${summary.pendingCount} changes pending sync`;
-  }
-  return 'All changes synced';
-}
-
-function farmerInitials(displayName: string): string {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) {
-    return `${parts[0][0] ?? ''}${parts[parts.length - 1][0] ?? ''}`.toUpperCase();
-  }
-  return displayName.slice(0, 2).toUpperCase();
-}
-
-const TILE_CAPTIONS: Record<'farm' | 'learn' | 'help' | 'market', string> = {
-  farm: 'Batches & darkroom',
-  learn: 'SOPs & guides',
-  help: 'Support & tickets',
-  market: 'Prices & buyers',
-};
-
 export default function HomePage() {
   const { forceLoadError } = useDebugQuery();
   const [loadState, setLoadState] = useState<LoadState>('loading');
@@ -40,7 +16,6 @@ export default function HomePage() {
   const [browserOffline, setBrowserOffline] = useState(false);
   const [completionToast, setCompletionToast] = useState<string | null>(null);
   const [taskPhase2, setTaskPhase2] = useState<string | null>(null);
-  const [aiPhase2, setAiPhase2] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (forceLoadError) {
@@ -93,7 +68,7 @@ export default function HomePage() {
   const showDashboard = loadState === 'success' && summary;
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
+    <div className="flex min-w-0 flex-col gap-4 overflow-x-hidden">
       {completionToast ? (
         <p
           className="rounded-lg bg-success/15 px-4 py-3 text-body font-medium text-success"
@@ -115,32 +90,18 @@ export default function HomePage() {
       {loadState === 'loading' ? <HomeSkeleton /> : null}
 
       {showDashboard ? (
-        <section className="flex min-w-0 flex-col gap-3" aria-live="polite">
+        <section className="flex min-w-0 flex-col gap-4" aria-live="polite">
+          <GreetingBlock summary={summary} />
           <SyncBanner summary={summary} browserOffline={browserOffline} />
-          <GreetingBlock summary={summary} browserOffline={browserOffline} />
-          <AiAgronomistCard
-            phase2Message={aiPhase2}
-            onPhase2={() =>
-              setAiPhase2('Voice recording is coming in Phase 2')
-            }
-          />
+          <AskCtaCard card={summary.askCta} />
           {summary.activeBatch ? (
-            <ActiveBatchCard batch={summary.activeBatch} />
+            <ActiveBatchBanner batch={summary.activeBatch} />
           ) : null}
-        </section>
-      ) : null}
-
-      {loadState !== 'loading' ? (
-        <section className="grid min-w-0 grid-cols-2 gap-3">
-          <TileLink href="/darkroom" label="My Farm" kind="farm" />
-          <TileLink href="/production" label="Learn" kind="learn" />
-          <TileLink href="/support" label="Get Help" kind="help" />
-          <TileLink href="/market" label="Market" kind="market" />
-        </section>
-      ) : null}
-
-      {showDashboard ? (
-        <>
+          <section className="grid min-w-0 grid-cols-2 gap-3">
+            {summary.navTiles.map((tile) => (
+              <TileLink key={tile.id} tile={tile} />
+            ))}
+          </section>
           <InspectionTaskCard
             reminder={summary.todayReminder}
             phase2Message={taskPhase2}
@@ -155,9 +116,8 @@ export default function HomePage() {
           {summary.agronomistTip ? (
             <AgronomistTipBanner tip={summary.agronomistTip} />
           ) : null}
-          <OfflineExplainerCard />
-          <HomeFooterLinks />
-        </>
+          <OfflineExplainerCard explainer={summary.offlineExplainer} />
+        </section>
       ) : null}
     </div>
   );
@@ -165,29 +125,33 @@ export default function HomePage() {
 
 function HomeSkeleton() {
   return (
-    <div className="flex flex-col gap-3" aria-busy="true" aria-live="polite">
-      <div className="h-14 w-full animate-pulse rounded-lg bg-divider" />
-      <div className="flex gap-3">
-        <div className="flex flex-1 flex-col gap-2">
-          <div className="h-7 w-4/5 animate-pulse rounded-md bg-divider" />
-          <div className="h-4 w-3/5 animate-pulse rounded-md bg-divider" />
-          <div className="h-4 w-full animate-pulse rounded-md bg-divider" />
-        </div>
-        <div className="h-14 w-14 shrink-0 animate-pulse rounded-lg bg-divider" />
-      </div>
-      <div className="h-36 w-full animate-pulse rounded-lg bg-divider" />
-      <div className="h-40 w-full animate-pulse rounded-lg bg-divider" />
+    <div className="flex flex-col gap-4" aria-busy="true" aria-live="polite">
+      <div className="h-14 w-4/5 animate-pulse rounded-md bg-divider" />
+      <div className="h-10 w-full animate-pulse rounded-lg bg-divider" />
+      <div className="h-16 w-full animate-pulse rounded-xl bg-divider" />
+      <div className="aspect-[16/10] w-full animate-pulse rounded-xl bg-divider" />
       <div className="grid grid-cols-2 gap-3">
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="aspect-square w-full animate-pulse rounded-lg bg-divider"
+            className="aspect-square w-full animate-pulse rounded-xl bg-divider"
           />
         ))}
       </div>
-      <div className="h-44 w-full animate-pulse rounded-lg bg-divider" />
-      <div className="h-24 w-full animate-pulse rounded-lg bg-divider" />
-      <div className="h-20 w-full animate-pulse rounded-lg bg-divider" />
+      <div className="h-48 w-full animate-pulse rounded-xl bg-divider" />
+    </div>
+  );
+}
+
+function GreetingBlock({ summary }: { summary: HomeSummary }) {
+  return (
+    <div className="min-w-0 pt-1">
+      <h2 className="break-words text-h1 font-bold leading-tight text-text-primary">
+        {summary.greetingLine}
+      </h2>
+      <p className="mt-1 text-body-small text-text-secondary">
+        {summary.farmUnitLabel}
+      </p>
     </div>
   );
 }
@@ -201,210 +165,72 @@ function SyncBanner({
 }) {
   const offline = browserOffline || summary.syncStatus === 'offline';
   const pending = !offline && summary.pendingCount > 0;
-
-  const eyebrow = offline
-    ? 'Offline'
-    : pending
-      ? 'Sync pending'
-      : 'Sync active';
-
   const detail = offline
-    ? 'Changes save on this phone and sync when you are back online.'
+    ? 'Offline — changes will sync later'
     : pending
       ? `${summary.pendingCount} changes pending sync`
-      : `All data synced (${summary.lastSyncedDisplay})`;
+      : `All data synced (Last sync: ${summary.lastSyncedDisplay})`;
 
   return (
-    <article className="flex min-h-12 items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2 shadow-sm">
+    <article
+      className={`flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 ${
+        offline ? 'bg-warning/15' : 'bg-accent/20'
+      }`}
+    >
       <CheckCircleGlyph
-        className={`h-6 w-6 shrink-0 ${offline ? 'text-warning' : 'text-success'}`}
+        className={`h-5 w-5 shrink-0 ${offline ? 'text-warning' : 'text-success'}`}
       />
-      <div className="min-w-0 flex-1">
-        <p
-          className={`text-caption font-bold uppercase tracking-wide ${
-            offline ? 'text-warning' : 'text-success'
-          }`}
-        >
-          {eyebrow}
-        </p>
-        <p className="text-body-small text-text-primary">{detail}</p>
-      </div>
-      {!offline ? (
-        <CloudDoneGlyph className="h-6 w-6 shrink-0 text-brand-secondary" />
-      ) : null}
+      <p className="min-w-0 text-body-small font-medium text-text-primary">
+        {detail}
+      </p>
     </article>
   );
 }
 
-function GreetingBlock({
-  summary,
-  browserOffline,
-}: {
-  summary: HomeSummary;
-  browserOffline: boolean;
-}) {
+function AskCtaCard({ card }: { card: HomeSummary['askCta'] }) {
   return (
-    <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0 flex-1">
-        <h2 className="break-words text-h1 font-bold leading-tight text-text-primary">
-          Hello, {summary.farmerDisplayName}
-        </h2>
-        <p className="mt-1 text-body-small text-text-secondary">
-          {syncStatusLine(summary, browserOffline)}
-        </p>
-        <p className="mt-1 flex items-start gap-1 text-body-small text-text-secondary">
-          <MapPinGlyph className="mt-0.5 h-4 w-4 shrink-0 text-brand-secondary" />
-          <span>{summary.farmUnitLabel}</span>
-        </p>
-      </div>
-      <span
-        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-elevated text-label font-bold text-brand-secondary shadow-sm"
-        aria-hidden
-      >
-        {farmerInitials(summary.farmerDisplayName)}
+    <Link
+      href="/ask"
+      className="flex min-h-16 min-w-0 items-center gap-3 rounded-xl bg-brand-secondary px-4 py-3 text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+    >
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface/15">
+        <MicGlyph className="h-6 w-6" />
       </span>
-    </div>
+      <span className="min-w-0 flex-1">
+        <span className="block text-label font-bold leading-tight">
+          {card.title}
+        </span>
+        <span className="mt-0.5 block text-caption opacity-90">
+          {card.subtitle}
+        </span>
+      </span>
+      <ChevronGlyph className="h-5 w-5 shrink-0 opacity-90" />
+    </Link>
   );
 }
 
-function AiAgronomistCard({
-  phase2Message,
-  onPhase2,
-}: {
-  phase2Message: string | null;
-  onPhase2: () => void;
-}) {
-  return (
-    <article className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
-      <div className="flex items-start gap-2">
-        <AgronomistGlyph className="h-8 w-8 shrink-0 text-brand-secondary" />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-h3 font-bold text-text-primary">
-              Ask a farming question
-            </h3>
-            <span className="rounded-full bg-accent/20 px-2 py-0.5 text-caption font-bold uppercase tracking-wide text-brand-secondary">
-              AI agronomist
-            </span>
-          </div>
-          <p className="mt-1 text-body-small text-text-secondary">
-            Get guidance on substrate, pests, or harvest timing without leaving
-            the farm.
-          </p>
-        </div>
-      </div>
-      <Link
-        href="/ask"
-        data-cta="ask"
-        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-primary px-3 text-button font-bold text-text-on-brand shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-      >
-        <MicGlyph className="h-5 w-5" />
-        Ask a question
-      </Link>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={onPhase2}
-          className="flex min-h-12 items-center justify-center gap-1 rounded-md bg-brand-primary px-2 text-label font-bold text-text-on-brand shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-        >
-          <MicGlyph className="h-5 w-5 shrink-0" />
-          Record voice
-        </button>
-        <Link
-          href="/ask"
-          className="flex min-h-12 items-center justify-center gap-1 rounded-md bg-accent/30 px-2 text-label font-bold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-        >
-          <MessageGlyph className="h-5 w-5 shrink-0" />
-          Write message
-        </Link>
-      </div>
-      {phase2Message ? (
-        <p
-          className="rounded-md bg-accent/20 px-3 py-2 text-body text-text-secondary"
-          role="status"
-        >
-          {phase2Message}
-        </p>
-      ) : null}
-    </article>
-  );
-}
-
-function ActiveBatchCard({
+function ActiveBatchBanner({
   batch,
 }: {
   batch: NonNullable<HomeSummary['activeBatch']>;
 }) {
   return (
-    <article className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-caption font-bold uppercase tracking-wide text-text-secondary">
-          {batch.cycleEyebrow}
-        </p>
-        <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-caption font-semibold text-success">
-          <span aria-hidden>●</span>
-          {batch.statusLabel}
-        </span>
-      </div>
-      <BatchRow
-        batchCode={batch.batchCode}
-        varietyLabel={batch.varietyLabel}
-        bagCount={batch.bagCount}
-        temperatureC={batch.temperatureC}
+    <article className="relative min-w-0 overflow-hidden rounded-xl shadow-sm">
+      <img
+        src={batch.bannerAssetPath}
+        alt=""
+        className="aspect-[16/10] w-full object-cover"
       />
-      <div className="h-2 w-full overflow-hidden rounded-full bg-accent/20">
-        <div
-          className="h-full rounded-full bg-brand-secondary"
-          style={{ width: `${batch.colonizedPercent}%` }}
-          role="progressbar"
-          aria-valuenow={batch.colonizedPercent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        />
-      </div>
-      <div className="flex justify-between text-caption font-medium text-text-secondary">
-        <span>
-          Day {batch.dayCurrent} of {batch.dayTotal}
+      <div className="absolute inset-0 bg-gradient-to-t from-text-primary/85 via-text-primary/35 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-4">
+        <span className="inline-flex rounded-full bg-surface px-2.5 py-1 text-caption font-bold uppercase tracking-wide text-brand-secondary">
+          {batch.badgeLabel}
         </span>
-        <span>{batch.colonizedPercent}% colonized</span>
+        <p className="mt-2 text-h3 font-bold text-text-on-brand">
+          {batch.bannerHeadline}
+        </p>
       </div>
     </article>
-  );
-}
-
-function BatchRow({
-  batchCode,
-  varietyLabel,
-  bagCount,
-  temperatureC,
-}: {
-  batchCode: string;
-  varietyLabel: string;
-  bagCount: number;
-  temperatureC: number;
-}) {
-  return (
-    <div className="flex gap-3">
-      <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-md border border-border bg-surface-elevated">
-        <BagGlyph className="h-7 w-7 text-brand-secondary" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-label font-bold text-text-primary">
-          Active batch #{batchCode}
-        </p>
-        <p className="text-body-small text-text-secondary">{varietyLabel}</p>
-        <div className="mt-1 flex flex-wrap gap-3 text-caption font-semibold text-text-secondary">
-          <span className="inline-flex items-center gap-1">
-            <BagGlyph className="h-4 w-4 text-brand-secondary" />
-            {bagCount} bags
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <TempGlyph className="h-4 w-4 text-brand-secondary" />
-            {temperatureC}°C
-          </span>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -418,27 +244,35 @@ function InspectionTaskCard({
   onPhase2: (kind: 'done' | 'log') => void;
 }) {
   return (
-    <article className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
+    <article className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-sm">
       {reminder ? (
         <>
-          <p className="text-caption font-bold uppercase tracking-wide text-warning">
+          <p className="flex items-center gap-1.5 text-caption font-bold uppercase tracking-wide text-warning">
+            <DropGlyph className="h-4 w-4 shrink-0" />
             {reminder.dueEyebrow}
           </p>
-          <h3 className="text-h3 font-bold text-text-primary">
-            {reminder.title}
-          </h3>
+          <h3 className="text-h3 font-bold text-text-primary">{reminder.title}</h3>
           <p className="text-body-small text-text-secondary">
             {reminder.instruction}
           </p>
-          <div className="rounded-md border border-border bg-accent/15 p-3">
-            <p className="text-caption font-bold text-brand-secondary">
-              {reminder.humidityTargetLabel}
-            </p>
-            <p className="text-label font-bold text-text-primary">
-              {reminder.humidityRange}
-            </p>
+          <div className="grid min-w-0 grid-cols-1 gap-2">
+            <button
+              type="button"
+              onClick={() => onPhase2('done')}
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-primary px-3 text-button font-bold text-text-on-brand shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
+              <CheckCircleGlyph className="h-5 w-5 shrink-0" />
+              Mark Completed
+            </button>
+            <button
+              type="button"
+              onClick={() => onPhase2('log')}
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-accent/25 px-3 text-button font-bold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
+              <TempGlyph className="h-5 w-5 shrink-0" />
+              Log Readings
+            </button>
           </div>
-          <TaskActionButtons onPhase2={onPhase2} />
           {phase2Message ? (
             <p
               className="rounded-md bg-accent/20 px-3 py-2 text-body text-text-secondary"
@@ -457,119 +291,72 @@ function InspectionTaskCard({
   );
 }
 
-function TaskActionButtons({
-  onPhase2,
-}: {
-  onPhase2: (kind: 'done' | 'log') => void;
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      <button
-        type="button"
-        onClick={() => onPhase2('done')}
-        className="flex min-h-12 items-center justify-center gap-1 rounded-md bg-brand-primary px-2 text-label font-bold text-text-on-brand shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-      >
-        <CheckCircleGlyph className="h-5 w-5" />
-        Mark done
-      </button>
-      <button
-        type="button"
-        onClick={() => onPhase2('log')}
-        className="flex min-h-12 items-center justify-center gap-1 rounded-md bg-accent/30 px-2 text-label font-bold text-brand-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-      >
-        <ListGlyph className="h-5 w-5" />
-        Log readings
-      </button>
-    </div>
-  );
-}
-
 function AgronomistTipBanner({ tip }: { tip: string }) {
   return (
-    <aside className="flex gap-3 rounded-lg border border-border bg-accent/15 p-3">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-secondary text-text-on-brand">
+    <aside className="flex min-w-0 items-start gap-3 rounded-xl bg-accent/20 p-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-secondary text-text-on-brand">
         <BulbGlyph className="h-5 w-5" />
       </span>
-      <div className="min-w-0">
-        <p className="text-label font-bold text-text-primary">
-          Agronomist tip
-        </p>
-        <p className="mt-1 text-body-small text-text-secondary">{tip}</p>
-      </div>
+      <p className="min-w-0 pt-1 text-body-small text-text-secondary">{tip}</p>
     </aside>
   );
 }
 
-function OfflineExplainerCard() {
+function OfflineExplainerCard({
+  explainer,
+}: {
+  explainer: HomeSummary['offlineExplainer'];
+}) {
   return (
-    <article className="flex gap-3 rounded-lg border border-border bg-surface p-3 shadow-sm">
-      <StorageGlyph className="h-8 w-8 shrink-0 text-text-secondary" />
-      <div>
-        <p className="text-label font-bold text-text-primary">
-          Working offline?
-        </p>
-        <p className="mt-1 text-body-small text-text-secondary">
-          Forms and photos save on this phone. They upload automatically when
-          you are back online.
-        </p>
+    <article className="flex min-w-0 items-start gap-3 rounded-xl bg-accent/10 p-3">
+      <OfflineGlyph className="mt-0.5 h-7 w-7 shrink-0 text-text-secondary" />
+      <div className="min-w-0">
+        <p className="text-label font-bold text-text-primary">{explainer.title}</p>
+        <p className="mt-1 text-body-small text-text-secondary">{explainer.body}</p>
       </div>
     </article>
   );
 }
 
-function TileLink({
-  href,
-  label,
-  kind,
-}: {
-  href: string;
-  label: string;
-  kind: 'farm' | 'learn' | 'help' | 'market';
-}) {
+function TileLink({ tile }: { tile: HomeSummary['navTiles'][number] }) {
+  const tone =
+    tile.id === 'learn'
+      ? 'bg-warning/20 text-warning'
+      : tile.id === 'help'
+        ? 'bg-error/10 text-error'
+        : 'bg-accent/20 text-brand-secondary';
+
   return (
     <Link
-      href={href}
-      className="flex aspect-square min-w-0 flex-col items-center justify-center gap-1 rounded-lg border border-border bg-surface p-2 text-center shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+      href={tile.href}
+      className="flex min-h-[132px] min-w-0 flex-col items-start justify-between rounded-xl border border-border bg-surface p-3 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
     >
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/15">
-        <TileGlyph kind={kind} />
+      <span
+        className={`flex h-11 w-11 items-center justify-center rounded-full ${tone}`}
+      >
+        <TileGlyph kind={tile.id} />
       </span>
-      <span className="text-label font-bold text-text-primary">{label}</span>
-      <span className="text-caption leading-tight text-text-secondary">
-        {TILE_CAPTIONS[kind]}
+      <span className="mt-3 w-full text-left">
+        <span className="block text-label font-bold text-text-primary">
+          {tile.title}
+        </span>
+        <span className="mt-0.5 block text-caption leading-snug text-text-secondary">
+          {tile.caption}
+        </span>
       </span>
     </Link>
   );
 }
 
-function HomeFooterLinks() {
-  return (
-    <footer className="flex min-w-0 flex-col gap-2 border-t border-border pt-3 text-center">
-      <Link
-        href="/health"
-        className="inline-flex min-h-12 items-center justify-center text-body-small font-medium text-text-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-      >
-        System status
-      </Link>
-      <Link
-        href="/register"
-        className="inline-flex min-h-12 items-center justify-center text-body-small font-medium text-text-secondary underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-      >
-        Farmer registration
-      </Link>
-    </footer>
-  );
-}
-
 function TileGlyph({ kind }: { kind: 'farm' | 'learn' | 'help' | 'market' }) {
-  const common = 'h-6 w-6 text-brand-secondary';
+  const common = 'h-6 w-6';
   switch (kind) {
     case 'farm':
       return (
         <svg className={common} viewBox="0 0 24 24" aria-hidden>
           <path
             fill="currentColor"
-            d="M4 20h16v-2H4v2zm2-8h4v6H6v-6zm6 0h4v6h-4v-6zM3 10l3-6h12l3 6v2H3v-2z"
+            d="M12 3c-1.5 3-4 5-4 8a4 4 0 008 0c0-3-2.5-5-4-8zm-1 14.9V21h2v-3.1A6.97 6.97 0 0112 17c-.34 0-.67.04-1 .1z"
           />
         </svg>
       );
@@ -578,7 +365,7 @@ function TileGlyph({ kind }: { kind: 'farm' | 'learn' | 'help' | 'market' }) {
         <svg className={common} viewBox="0 0 24 24" aria-hidden>
           <path
             fill="currentColor"
-            d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 13.5L4 12v5l8 4.5 8-4.5v-5l-8 4.5z"
+            d="M4 4h9a2 2 0 012 2v12l-3-2-3 2V6H4v12H2V6a2 2 0 012-2zm11 2h3a2 2 0 012 2v12h-2V8h-3V6z"
           />
         </svg>
       );
@@ -587,7 +374,7 @@ function TileGlyph({ kind }: { kind: 'farm' | 'learn' | 'help' | 'market' }) {
         <svg className={common} viewBox="0 0 24 24" aria-hidden>
           <path
             fill="currentColor"
-            d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-2h2v2zm0-4h-2V9.5c0-1.66 3-1.54 3 0V13z"
+            d="M12 1a5 5 0 00-5 5v2.1A5.5 5.5 0 003 13.5V16h2v-2.5A3.5 3.5 0 018.5 10h7A3.5 3.5 0 0119 13.5V16h2v-2.5A5.5 5.5 0 0017 8.1V6a5 5 0 00-5-5zm-2 18h4v2h-4v-2z"
           />
         </svg>
       );
@@ -596,7 +383,7 @@ function TileGlyph({ kind }: { kind: 'farm' | 'learn' | 'help' | 'market' }) {
         <svg className={common} viewBox="0 0 24 24" aria-hidden>
           <path
             fill="currentColor"
-            d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zM7.17 14h9.66l2.5-7H4.67l2.5 7zM6 6h15l-1 4H7L6 6z"
+            d="M3 9l2-4h14l2 4v2H3V9zm1 3h16v8H4v-8zm3 2v4h2v-4H7zm4 0v4h2v-4h-2zm4 0v4h2v-4h-2z"
           />
         </svg>
       );
@@ -614,39 +401,6 @@ function CheckCircleGlyph({ className = '' }: { className?: string }) {
   );
 }
 
-function CloudDoneGlyph({ className = '' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden>
-      <path
-        fill="currentColor"
-        d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.99 5.99 0 000 14c0 3.31 2.69 6 6 6h11c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17l5.59-5.59L17 10l-7 7z"
-      />
-    </svg>
-  );
-}
-
-function MapPinGlyph({ className = '' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden>
-      <path
-        fill="currentColor"
-        d="M12 11.5A2.5 2.5 0 119.5 9 2.5 2.5 0 0112 11.5zm7.43 2.08l-4.77 8.18A2 2 0 0013 22h-2a2 2 0 00-1.66-.92l-4.77-8.18A7 7 0 0112 5a7 7 0 017.43 8.58z"
-      />
-    </svg>
-  );
-}
-
-function AgronomistGlyph({ className = '' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden>
-      <path
-        fill="currentColor"
-        d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19a7 7 0 00-5.6 11.1l.9.9H6v3h12v-3h-1.3l.9-.9A7 7 0 0012 2zm0 4a3 3 0 013 3h-2a1 1 0 00-2 0H9a3 3 0 013-3z"
-      />
-    </svg>
-  );
-}
-
 function MicGlyph({ className = '' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden>
@@ -658,23 +412,23 @@ function MicGlyph({ className = '' }: { className?: string }) {
   );
 }
 
-function MessageGlyph({ className = '' }: { className?: string }) {
+function ChevronGlyph({ className = '' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden>
       <path
         fill="currentColor"
-        d="M20 2H4a2 2 0 00-2 2v14l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2zm0 12H6.83L4 16.83V4h16v10z"
+        d="M9.29 6.71L13.58 11l-4.29 4.29L10.71 17l6-6-6-6-1.42 1.71z"
       />
     </svg>
   );
 }
 
-function BagGlyph({ className = '' }: { className?: string }) {
+function DropGlyph({ className = '' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden>
       <path
         fill="currentColor"
-        d="M6 7V5a6 6 0 1112 0v2h2v14H4V7h2zm2 0h8V5a4 4 0 00-8 0v2z"
+        d="M12 2.69l5.66 5.66a7 7 0 11-9.9 0L12 2.69z"
       />
     </svg>
   );
@@ -691,17 +445,6 @@ function TempGlyph({ className = '' }: { className?: string }) {
   );
 }
 
-function ListGlyph({ className = '' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden>
-      <path
-        fill="currentColor"
-        d="M3 6h2v2H3V6zm0 5h2v2H3v-2zm0 5h2v2H3v-2zm4-10h14v2H7V6zm0 5h14v2H7v-2zm0 5h14v2H7v-2z"
-      />
-    </svg>
-  );
-}
-
 function BulbGlyph({ className = '' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden>
@@ -713,12 +456,12 @@ function BulbGlyph({ className = '' }: { className?: string }) {
   );
 }
 
-function StorageGlyph({ className = '' }: { className?: string }) {
+function OfflineGlyph({ className = '' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden>
       <path
         fill="currentColor"
-        d="M2 20h20v-4H2v4zm2-6h16V6H4v8zm2-6h4v2H6V8zm0 3h6v2H6v-2z"
+        d="M1 9l2 2a12.9 12.9 0 0118 0l2-2A15.7 15.7 0 0012 5 15.7 15.7 0 001 9zm4 4l2 2a7.1 7.1 0 0110 0l2-2a9.9 9.9 0 00-14 0zm4 4l3 3 3-3a4.2 4.2 0 00-6 0zM3.3 3L2 4.3 19.7 22 21 20.7 3.3 3z"
       />
     </svg>
   );

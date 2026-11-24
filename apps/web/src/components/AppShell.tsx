@@ -150,19 +150,38 @@ export default function AppShell({ title, children }: AppShellProps) {
             <h1 className="truncate text-h3 font-bold text-text-primary">{title}</h1>
           )}
           <div className="flex shrink-0 items-center gap-2">
-            <span
-              role="status"
-              className={`inline-flex min-h-8 items-center gap-1 rounded-full px-3 text-caption font-semibold uppercase tracking-wide ${
-                isOnline
-                  ? 'bg-success/15 text-success'
-                  : 'bg-warning/15 text-warning'
-              }`}
-            >
-              <span className="text-caption leading-none" aria-hidden>
-                ●
+            {isHome ? (
+              <span
+                role="status"
+                aria-label={isOnline ? 'Online' : 'Offline'}
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${
+                  isOnline
+                    ? 'bg-success/15 text-success'
+                    : 'bg-warning/15 text-warning'
+                }`}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+                  <path
+                    fill="currentColor"
+                    d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.99 5.99 0 000 14c0 3.31 2.69 6 6 6h11c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"
+                  />
+                </svg>
               </span>
-              {isOnline ? 'Online' : 'Offline'}
-            </span>
+            ) : (
+              <span
+                role="status"
+                className={`inline-flex min-h-8 items-center gap-1 rounded-full px-3 text-caption font-semibold uppercase tracking-wide ${
+                  isOnline
+                    ? 'bg-success/15 text-success'
+                    : 'bg-warning/15 text-warning'
+                }`}
+              >
+                <span className="text-caption leading-none" aria-hidden>
+                  ●
+                </span>
+                {isOnline ? 'Online' : 'Offline'}
+              </span>
+            )}
             {isHome ? (
               <img
                 src="/assets/brand/avatar.jpg"

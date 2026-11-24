@@ -42,17 +42,64 @@ export type HomeActiveBatch = {
   dayCurrent: number;
   dayTotal: number;
   colonizedPercent: number;
+  bannerAssetPath: string;
+  bannerHeadline: string;
+  badgeLabel: string;
+};
+
+export type HomeAskCta = {
+  title: string;
+  subtitle: string;
+};
+
+export type HomeTimelineMilestone = {
+  id: string;
+  label: string;
+  detail: string;
+  state: 'done' | 'current' | 'upcoming';
+};
+
+export type HomeIncubationTimeline = {
+  title: string;
+  progressLabel: string;
+  percent: number;
+  milestones: HomeTimelineMilestone[];
+};
+
+export type HomeMicroClimate = {
+  eyebrow: string;
+  statusLabel: string;
+  temperatureC: number;
+  temperatureTarget: string;
+  temperatureStatus: string;
+  humidityPercent: number;
+  humidityLabel: string;
+  humidityTarget: string;
+  chartLabels: string[];
+};
+
+export type HomeNavTile = {
+  id: 'farm' | 'learn' | 'help' | 'market';
+  href: string;
+  title: string;
+  caption: string;
 };
 
 export type HomeSummary = {
   farmerDisplayName: string;
+  greetingLine: string;
   farmerId: string;
   farmUnitLabel: string;
   lastSyncedDisplay: string;
   syncStatus: SyncStatus;
   pendingCount: number;
+  askCta: HomeAskCta;
   activeBatch: HomeActiveBatch | null;
+  incubationTimeline: HomeIncubationTimeline | null;
+  microClimate: HomeMicroClimate | null;
+  navTiles: HomeNavTile[];
   agronomistTip: string | null;
+  offlineExplainer: { title: string; body: string };
   todayReminder: {
     id: string;
     title: string;
